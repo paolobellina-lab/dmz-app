@@ -7,115 +7,22 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DMZ">
 <meta name="theme-color" content="#000000">
-<title>DMZ: TACTICAL MAP v2.4</title>
+<title>DMZ: TACTICAL MAP v2.5</title>
 
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 
+<link rel="stylesheet" href="style.css">
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
-<style>
-    /* STILE GRAFICO INTEGRATO (Niente più file separati) */
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-    
-    body { margin: 0; padding: 0; background: #000; font-family: 'Share Tech Mono', 'Courier New', monospace; overflow: hidden; color: #0f0; }
-    
-    /* SCHERMATA LOGIN */
-    .full-screen-ui { position: absolute; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle at center, #0a150a 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-    h1 { color: #fff; text-shadow: 0 0 15px #0f0, 0 0 5px #0f0; font-size: 36px; letter-spacing: 4px; margin-bottom: 5px; text-align: center; }
-    .version-tag { color: #0a0; font-size: 14px; margin-bottom: 20px; font-weight: bold; letter-spacing: 2px; }
-    
-    .status-label { font-size: 18px; font-weight: bold; margin-bottom: 20px; padding: 10px; border: 1px solid #f00; color: #f00; text-align: center; width: 80%; max-width: 300px; background: rgba(255,0,0,0.1); clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
-    .status-label.running { border-color: #0f0; color: #0f0; background: rgba(0,255,0,0.1); }
-
-    .input-box { background: rgba(0, 20, 0, 0.8); border: 1px solid #0f0; color: #0f0; padding: 15px; margin: 8px; width: 80%; max-width: 300px; text-align: center; font-size: 16px; font-family: 'Share Tech Mono', monospace; text-transform: uppercase; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); transition: 0.3s; outline: none; }
-    .input-box:focus { background: rgba(0, 40, 0, 0.9); box-shadow: 0 0 10px #0f0; }
-    .input-box::placeholder { color: #050; }
-    
-    .btn-deploy { background: linear-gradient(135deg, #004400 0%, #001100 100%); color: #0f0; border: 1px solid #0f0; padding: 15px 40px; font-size: 18px; font-family: 'Share Tech Mono', monospace; cursor: pointer; margin-top: 15px; box-shadow: 0 0 10px rgba(0,255,0,0.2); transition: 0.2s; width: 80%; max-width: 300px; clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); text-transform: uppercase; letter-spacing: 1px; }
-    .btn-deploy:active { background: #0f0; color: #000; box-shadow: 0 0 20px #0f0; }
-    .btn-deploy:disabled { background: #111; border-color: #333; color: #555; box-shadow: none; cursor: not-allowed; }
-
-    /* MAPPA */
-    #map { height: 100vh; width: 100vw; z-index: 1; background: #111; position: absolute; top:0; left:0; }
-    .rotated-east { transform: rotate(-90deg); transform-origin: center center; width: 100vh !important; height: 100vw !important; position: fixed !important; top: 50% !important; left: 50% !important; margin-top: -50vw !important; margin-left: -50vh !important; }
-
-    /* MARKER MINIMALI */
-    .base-marker-container { position:relative; width:30px; height:30px; display:flex; justify-content:center; align-items:center; }
-    .base-circle { background:rgba(255,255,0,0.9); border:2px solid #000; border-radius:50%; width:20px; height:20px; display:flex; justify-content:center; align-items:center; color:#000; font-family:'Share Tech Mono', sans-serif; font-weight:bold; font-size:10px; box-shadow:0 0 8px #ff0; }
-    .base-name { position:absolute; top:24px; width:120px; text-align:center; color:#ff0; font-size:10px; font-weight:bold; text-shadow:1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; letter-spacing:1px; white-space:nowrap; pointer-events: none; }
-    
-    .exfil-circle { background:rgba(0,255,255,0.9); border:2px solid #000; border-radius:50%; width:24px; height:24px; display:flex; justify-content:center; align-items:center; font-size:12px; box-shadow:0 0 8px #0ff; }
-    .exfil-name { position:absolute; top:28px; width:100px; text-align:center; color:#0ff; font-size:10px; font-weight:bold; text-shadow:1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; pointer-events: none; }
-
-    #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(0, 255, 0, 0.6); font-size: 30px; font-weight: bold; z-index: 1000; pointer-events: none; text-shadow: 0 0 5px #000; display: none; font-family: sans-serif; }
-
-    /* EFFETTI A SCHERMO */
-    #gas-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(200, 0, 255, 0.15); z-index: 999; display: none; pointer-events: none; box-shadow: inset 0 0 100px rgba(200,0,255,0.9); }
-    #cuav-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(0, 50, 0, 0.1), rgba(0, 50, 0, 0.1) 2px, transparent 2px, transparent 4px); backdrop-filter: blur(8px) grayscale(100%); z-index: 999; display: none; pointer-events: none; }
-    #emp-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #050000; z-index: 5000; display: none; flex-direction: column; justify-content: center; align-items: center; color: #f00; font-family: monospace; font-size: 24px; font-weight: bold; text-align: center; text-shadow: 0 0 20px #f00; }
-    #revive-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 40, 0, 0.95); z-index: 6000; display: none; flex-direction: column; justify-content: center; align-items: center; color: #0f0; font-family: 'Share Tech Mono', monospace; font-size: 24px; text-align: center; text-shadow: 0 0 15px #0f0; }
-
-    /* HUD SUPERIORE */
-    #hud-top-container { position: absolute; top: 0; left: 0; width: 100%; z-index: 1000; display: flex; flex-direction: column; pointer-events: none; }
-    #obj-banner { width: 100%; background: rgba(0, 15, 0, 0.85); border-bottom: 2px solid #0f0; padding: 10px 0; color: #0f0; font-weight: bold; font-size: 16px; text-shadow: 0 0 8px #0f0; text-align: center; letter-spacing: 1px; backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-    #team-banner { background: rgba(0,0,0,0.6); color: #fff; font-size: 10px; padding: 4px; text-align: center; border-bottom: 1px solid #555; }
-    #hud-sub-top { display: flex; justify-content: space-between; padding: 10px; width: calc(100% - 20px); }
-    .hud-box { background: rgba(0, 20, 0, 0.7); border: 1px solid #0f0; padding: 6px 12px; color: #0f0; font-size: 12px; text-shadow: 0 0 5px #0f0; backdrop-filter: blur(4px); clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); box-shadow: 0 0 5px rgba(0,255,0,0.2); }
-    .hud-economy { background: linear-gradient(135deg, rgba(0,40,0,0.9) 0%, rgba(0,15,0,0.9) 100%); cursor: pointer; pointer-events: auto; font-size: 14px; font-weight: bold; }
-
-    /* FEED COMBAT LOG */
-    #combat-log { position: absolute; top: 120px; right: 10px; width: 65%; max-width: 280px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; z-index: 1000; pointer-events: none; }
-    .log-entry { background: rgba(0, 15, 0, 0.85); border-right: 3px solid #0f0; color: #fff; padding: 6px 10px; font-size: 11px; font-family: 'Share Tech Mono', monospace; text-shadow: 0 0 3px #000; clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px); animation: slideIn 0.4s ease-out; backdrop-filter: blur(2px); text-align: right; }
-    .log-entry span.time { color: #0ff; margin-right: 5px; }
-    @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
-
-    /* HUD LATERALE E INFERIORE */
-    #hud-status { position: absolute; top: 130px; left: 10px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
-    .btn-status { background: rgba(0,10,0,0.8); border: 1px solid #555; color: #fff; padding: 10px; font-family: 'Share Tech Mono', monospace; font-size: 12px; cursor: pointer; text-align: left; transition: 0.2s; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); backdrop-filter: blur(4px); pointer-events: auto; }
-    .btn-status:active { transform: scale(0.95); }
-
-    #hud-bottom { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 20px; pointer-events: auto; }
-    .action-btn { background: rgba(0,20,0,0.85); border: 2px solid #0f0; color: #0f0; width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 0 15px rgba(0,255,0,0.3); transition: 0.2s; clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); }
-    .action-btn:active { background: #0f0; color: #000; transform: scale(0.9); box-shadow: 0 0 25px #0f0; }
-    .action-btn.btn-scanner { border-color: #0ff; color: #0ff; box-shadow: 0 0 15px rgba(0,255,255,0.4); }
-
-    /* MODALS */
-    .game-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 15, 0, 0.95); backdrop-filter: blur(8px); z-index: 3000; display: none; flex-direction: column; justify-content: center; align-items: center; border: 2px solid #0f0; box-sizing: border-box; }
-    .modal-title { color: #0ff; font-size: 26px; font-weight: bold; margin-bottom: 10px; text-shadow: 0 0 15px #0ff; letter-spacing: 2px; text-transform: uppercase; text-align:center;}
-    .modal-desc { color: #0a0; font-size: 13px; margin-bottom: 20px; text-align: center; width: 85%; line-height: 1.4; }
-    .btn-close-modal { background: transparent; color: #fff; border: 1px solid #f00; padding: 12px 25px; font-size: 16px; margin-top: 25px; cursor: pointer; font-family: 'Share Tech Mono', monospace; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); transition: 0.2s; text-transform: uppercase; }
-    .btn-close-modal:active { background: #f00; color: #000; box-shadow: 0 0 15px #f00; }
-
-    #qr-reader-container { width: 100%; max-width: 350px; min-height: 250px; background: #000; border: 2px solid #0ff; margin-bottom:15px; display:flex; justify-content:center; align-items:center; }
-    #qr-reader { width: 100%; }
-
-    .shop-item { display:flex; justify-content:space-between; align-items:center; background:rgba(0,30,0,0.6); border:1px solid #0aa; padding:12px; margin-bottom:8px; width:90%; max-width:350px; color:#fff; font-size:14px; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
-    .shop-btn { background:rgba(0,80,0,0.8); border:1px solid #0f0; color:#0f0; padding:6px 12px; cursor:pointer; font-family: 'Share Tech Mono', monospace; clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px); transition: 0.2s; }
-    .shop-btn:active { background: #0f0; color: #000; }
-    .bp-item { display:flex; flex-direction:column; background:rgba(0,20,0,0.8); border:1px dashed #0f0; padding:12px; margin-bottom:8px; width:90%; max-width:350px; color:#fff; font-size:14px; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
-    
-    .locker-panel { flex: 1; border: 1px solid #0aa; background: rgba(0,15,15,0.8); display: flex; flex-direction: column; overflow-y: auto; padding: 8px; height: 350px; clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); }
-    .locker-panel h3 { margin: 0 0 10px 0; color: #0ff; font-size: 14px; text-align: center; border-bottom: 1px solid #0aa; padding-bottom: 5px; letter-spacing: 1px; }
-    .locker-item { background: rgba(0,0,0,0.6); border: 1px solid #0aa; padding: 10px; margin-bottom: 5px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; color: #ddd; clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px); }
-    .locker-btn { background: rgba(0,80,80,0.8); border: 1px solid #0ff; color: #0ff; padding: 5px 10px; cursor: pointer; font-family: 'Share Tech Mono', monospace; font-size: 10px; clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px); transition: 0.2s;}
-    .locker-btn:active { background: #0ff; color: #000; }
-
-    /* STILE MARKER E PING */
-    .teammate-label { background: rgba(0,0,0,0.7); color: #fff; font-family: sans-serif; font-weight: bold; border-radius: 3px; padding: 2px 4px; font-size: 10px; margin-top: -38px; text-align: center; width: 100px; margin-left: -42px; border: 1px solid #555; pointer-events: none; }
-    .ping-icon { background: rgba(255, 0, 0, 0.8); border: 2px solid #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; box-shadow: 0 0 15px #f00; animation: ping-pulse 1s infinite; }
-    @keyframes ping-pulse { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }
-
-    #targeting-overlay { position: absolute; top: 120px; left: 50%; transform: translateX(-50%); background: rgba(255,0,0,0.85); color: white; padding: 15px 25px; border: 1px solid #f00; z-index: 2000; display: none; text-align: center; pointer-events: none; box-shadow: 0 0 30px #f00; font-size: 14px; letter-spacing: 1px; clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); backdrop-filter: blur(5px); }
-</style>
 
 </head>
 <body>
 
 <div id="login-screen" class="full-screen-ui">
     <h1>DMZ: DEPLOY</h1>
-    <div class="version-tag">PLAYER TERMINAL v2.4</div>
+    <div class="version-tag">PLAYER TERMINAL v2.5</div>
     
     <div id="status-label" class="status-label">CONNESSIONE...</div>
     
@@ -151,9 +58,7 @@
 
 <div id="scanner-modal" class="game-modal">
     <div class="modal-title">SCANSIONE OTTICA</div>
-    <div id="qr-reader-container">
-        <div id="qr-reader"></div>
-    </div>
+    <div id="qr-reader" style="width: 100%; max-width: 350px; background: #000; border: 2px solid #0ff; margin-bottom:15px; min-height: 250px;"></div>
     <div style="display:flex; width: 90%; max-width: 350px; gap: 5px; margin-top: 15px;">
         <input type="text" id="manual-code-input" class="input-box" placeholder="ES: B5" style="width:70%; font-size:18px; border-color:#0ff; color:#0ff; margin:0;">
         <button class="btn-deploy" style="width:30%; background:linear-gradient(135deg, #004444 0%, #001111 100%); border-color:#0ff; margin:0; padding:10px;" onclick="processScannedCode()">INVIA</button>
@@ -198,12 +103,11 @@
     <button class="btn-deploy" style="background:#500; border-color:#f00; margin-top:40px;" onclick="cancelRevive()">INTERROMPI</button>
 </div>
 
-<div id="emp-overlay">⚠️ ERRORE CRITICO ⚠️<br><br>IMPULSO ELETROMAGNETICO<br>RILEVATO</div>
+<div id="emp-overlay">⚠️ ERRORE CRITICO ⚠️<br><br>IMPULSO ELETROMAGNETICO</div>
 <div id="map"></div>
 <div id="gas-overlay"></div>
 <div id="cuav-overlay"></div>
 <div id="crosshair">✛</div>
-<div id="targeting-overlay">⬇ CLICCA SULLA MAPPA PER LANCIARE L'ATTACCO AEREO ⬇</div>
 
 <div id="hud-top-container" style="display:none;">
     <div id="obj-banner">OBIETTIVO: SOPRAVVIVENZA</div>
@@ -229,6 +133,8 @@
     <div class="action-btn" style="border-color:#ff0; color:#ff0; box-shadow: 0 0 15px rgba(255,255,0,0.3);" onclick="toggleMapRotation()">🧭</div>
     <div class="action-btn btn-scanner" onclick="openScanner()">📷</div> 
 </div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
@@ -259,6 +165,7 @@
     let isDeployed = false, bleedoutTimer = null, localUAVActive = false, isTargetingAirstrike = false;
     let myContract = null, exfilTimerEnd = null; window.bleedoutEndTime = null; let isMapRotated = false;
     let globalSettings = { status: 'lobby' }; let activeStreaks = {};
+
     let masterRareLootPool = [ { name: "CHIAVE UNIVERSALE", chance: 30, value: 5000, enabled: true }, { name: "LINGOTTO D'ORO", chance: 30, value: 8000, enabled: true }, { name: "ATTACCO AEREO", chance: 20, value: 8000, enabled: true }, { name: "UAV DI DISTURBO", chance: 20, value: 2500, enabled: true } ];
 
     window.logEvent = function(msg) { push(ref(db, 'dmz_logs'), { msg: msg, timestamp: Date.now() }); };
@@ -440,9 +347,7 @@
     };
     window.cancelRevive = function() { if (window.reviveInterval) clearInterval(window.reviveInterval); document.getElementById('revive-overlay').style.display = 'none'; };
 
-    // FIX DEFINITIVO FOTOCAMERA
     let html5QrCode = null;
-    
     window.openScanner = function() { 
         if(myStatus !== 'active') return alert("Sei a terra o eliminato!"); 
         if(document.getElementById('emp-overlay').style.display === 'flex') return alert("SISTEMA BLOCCATO DA EMP.");
@@ -491,7 +396,6 @@
             let isRare = globalSettings.keys_lockers ? true : false;
             if (isRare) { if (!consumeKey(code)) return; }
             
-            // LOGICA CONTRATTI A ZONA (NUKE / INTEL)
             if (myContract && (myContract.type === 'INTEL' || myContract.type === 'NUKE') && myContract.state === 'FETCH') {
                 let expectedBaseNum = myContract.targetId.replace('B', ''); 
                 let scannedBoxNum = code.replace('A', '');
@@ -703,141 +607,4 @@
 
             update(ref(db, 'dmz_players/' + myId), { name: myName, team: myTeam, lat: lat, lng: lng, status: myStatus, in_gas: inGasSicuro, has_cargo: iHaveCargo, lastUpdate: Date.now() }).catch(e => {});
             if (!myMarker) { myMarker = L.marker([lat, lng], {icon: L.divIcon({ className: 'my-icon', html: `<div style="width:20px; height:20px; background:cyan; border:3px solid white; border-radius:50%; box-shadow:0 0 15px cyan;"></div>`, iconSize: [20, 20] }) }).addTo(map); map.setView([lat, lng], 18); } else { myMarker.setLatLng([lat, lng]); }
-        }, (err) => {
-            let gs = document.getElementById('gps-status');
-            if(gs) { gs.style.color = "#f00"; if(err.code === 1) gs.innerText = "GPS: NEGATO"; else if(err.code === 2) gs.innerText = "GPS: NO SEGNALE"; else if(err.code === 3) gs.innerText = "GPS: TIMEOUT"; }
-        }, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
-    }
-
-    setInterval(() => {
-        if(!isDeployed || !map || myStatus === 'exfil') return; let now = Date.now();
-        
-        if (exfilTimerEnd) { if (myStatus !== 'active') { exfilTimerEnd = null; } else if (Math.ceil((exfilTimerEnd - now) / 1000) <= 0) { exfilTimerEnd = null; doExfil(); } }
-        if (myContract && myContract.type === 'DESTROY' && myContract.state === 'ARMED') { if (myStatus !== 'active') { myContract = null; } else if (Math.ceil((myContract.endTime - now) / 1000) <= 0) { alert("BOOM! Scorte distrutte!\n+$10000"); myCash += 10000; updateEconomyHUD(); myContract = null; logEvent(`💥 Scorte distrutte.`); } }
-
-        // GESTIONE ZONE GIALLE PER CONTRATTI
-        if (myContract && (myContract.type === 'INTEL' || myContract.type === 'NUKE') && myContract.state === 'FETCH') {
-            if (!window.contractCircle) { window.contractCircle = L.circle([myContract.targetLat, myContract.targetLng], {color: '#ff0', fillColor: '#ff0', fillOpacity: 0.2, radius: 50, dashArray: '10, 10'}).addTo(map); }
-        } else if (window.contractCircle) { map.removeLayer(window.contractCircle); window.contractCircle = null; }
-
-        let inGas = false; let gasRemain = 0;
-        if(globalSettings.gas_config && globalSettings.gas_config.enabled) {
-            let conf = globalSettings.gas_config; let centerLL = L.latLng(activeFieldCenter[0], activeFieldCenter[1]);
-            let stepsTaken = Math.floor(((now - conf.startTime) / 60000) / conf.interval); if(stepsTaken > conf.steps) stepsTaken = conf.steps;
-            let maxR = 0; activePlayAreaCoords.forEach(p => { let d = centerLL.distanceTo(L.latLng(p[0], p[1])); if(d > maxR) maxR = d; }); let currentRadius = maxR * (1 - (stepsTaken / conf.steps)); if(currentRadius < 10) currentRadius = 10;
-            if(!window.safeZoneCircle) { window.safeZoneCircle = L.circle(centerLL, {color:'#f0f', weight:2, fillOpacity:0.05, dashArray:'5,5'}).addTo(map); } else { window.safeZoneCircle.setRadius(currentRadius); }
-            if(myMarker) {
-                inGas = centerLL.distanceTo(myMarker.getLatLng()) > currentRadius;
-                document.getElementById('gas-overlay').style.display = inGas ? 'block' : 'none';
-                if (inGas && conf.lethal && myStatus === 'active') {
-                    let maxTime = conf.survivalTime; if(myBackpack.some(i => i.name.includes("AVANZATA"))) maxTime += 120; else if(myBackpack.some(i => i.name.includes("COMPLETA"))) maxTime += 60; else if(myBackpack.some(i => i.name.includes("SEMPLICE"))) maxTime += 30;
-                    window.gasExposure = (window.gasExposure || 0) + 1; gasRemain = maxTime - window.gasExposure;
-                    if (gasRemain <= 0) { alert("Filtri esauriti. Sei a terra!"); setStatus('down'); }
-                } else if (!inGas) { window.gasExposure = 0; }
-                if (window.lastGasStatus !== inGas) { window.lastGasStatus = inGas; update(ref(db, 'dmz_players/' + myId), { in_gas: inGas }); }
-            }
-        } else { document.getElementById('gas-overlay').style.display = 'none'; if(window.safeZoneCircle) { map.removeLayer(window.safeZoneCircle); window.safeZoneCircle = null; } }
-
-        if (myStatus === 'down' && window.bleedoutEndTime) { if (Math.ceil((window.bleedoutEndTime - now) / 1000) <= 0) { window.bleedoutEndTime = null; setStatus('dead'); } }
-
-        if(activeStreaks.airstrikes && myMarker && myStatus === 'active') { Object.keys(activeStreaks.airstrikes).forEach(k => { let s = activeStreaks.airstrikes[k]; let age = now - s.timestamp; if (age > 15000 && age < 17000 && s.team !== myTeam) { if (myMarker.getLatLng().distanceTo([s.lat, s.lng]) <= 20) { setStatus('down'); alert("⚠️ COLPITO DA ATTACCO AEREO! ⚠️"); } } }); }
-        let cuavOn = false, empOn = false;
-        if(activeStreaks.cuav && activeStreaks.cuav.endTime > now && activeStreaks.cuav.team !== myTeam) cuavOn = true;
-        if(activeStreaks.emp && activeStreaks.emp.endTime > now && activeStreaks.emp.team !== myTeam) empOn = true;
-        document.getElementById('cuav-overlay').style.display = cuavOn ? 'block' : 'none'; document.getElementById('emp-overlay').style.display = empOn ? 'flex' : 'none';
-
-        // GESTIONE TESTO HUD (Con Geiger Counter)
-        let osText = (globalSettings.exfil_config && globalSettings.exfil_config.enabled) ? "OBIETTIVO: ESTRAZIONE" : "OBIETTIVO: SOPRAVVIVENZA"; let osColor = "#0f0";
-        if (globalSettings.uav_active || localUAVActive) { osText = "⚠️ UAV ATTIVO"; osColor = "#f00"; }
-        
-        if (myContract) { 
-            if (myContract.type === 'NUKE' && myContract.state === 'FETCH' && myMarker) {
-                let dist = Math.round(myMarker.getLatLng().distanceTo([myContract.targetLat, myContract.targetLng]));
-                if (dist <= 50) { osText = `☢️ GEIGER: ${dist}m`; osColor = "#0f0"; if(dist <= 5) osText = `☢️ SCANSIONA L'ARMADIETTO QUI`; } else { osText = `VAI ALLA ZONA DI RICERCA`; osColor = "#ff0"; }
-            } else { osText = `CONTRATTO ATTIVO`; osColor = "#ff0"; }
-        }
-        
-        if (myContract && myContract.type === 'DESTROY' && myContract.state === 'ARMED') { let r = Math.ceil((myContract.endTime - now) / 1000); if (r > 0) { osText = `💣 DETONAZIONE: ${r}s`; osColor = "#ff0"; } }
-        if (exfilTimerEnd) { let r = Math.ceil((exfilTimerEnd - now) / 1000); if (r > 0) { osText = `🚁 ESTRAZIONE: ${r}s`; osColor = "#0ff"; } }
-        if (inGas) { if (globalSettings.gas_config && globalSettings.gas_config.lethal && myStatus === 'active') { osText = `☢️ GAS: ${gasRemain}s`; osColor = "#f0f"; } else if (globalSettings.gas_config && !globalSettings.gas_config.lethal) { osText = `☢️ ZONA CONTAMINATA`; osColor = "#f0f"; } }
-        
-        if (myStatus === 'down') { if (window.bleedoutEndTime) { let r = Math.ceil((window.bleedoutEndTime - now) / 1000); osText = `🩸 DISSANGUAMENTO: ${r}s`; osColor = "#ffa500"; } else { osText = `🩸 IN ATTESA MEDICO`; osColor = "#ffa500"; }
-        } else if (myStatus === 'dead') { osText = `💀 ELIMINATO`; osColor = "#f00"; } else if (myStatus === 'exfil') { osText = `✅ ESTRATTO`; osColor = "#0f0"; }
-
-        let ob = document.getElementById('obj-banner'); if(ob) { ob.innerText = osText; ob.style.color = osColor; ob.style.borderColor = osColor; ob.style.textShadow = `0 0 10px ${osColor}`; }
-
-    }, 1000);
-
-    function setupNetworking() {
-        onValue(ref(db, 'dmz_players/' + myId), (snap) => {
-            if (snap.exists() && isDeployed && myStatus !== 'exfil') {
-                let data = snap.val();
-                if (data.cash !== undefined && data.cash !== myCash) { myCash = data.cash; document.getElementById('txt-cash').innerText = `💵 $${myCash}`; }
-                if (data.backpack !== undefined) { myBackpack = data.backpack; document.getElementById('txt-bp').innerText = `🎒 ${myBackpack.length}/5`; } else if (myBackpack.length > 0) { myBackpack = []; document.getElementById('txt-bp').innerText = `🎒 0/5`; }
-                if (data.status === 'active' && myStatus !== 'active') { myStatus = 'active'; document.querySelectorAll('.btn-status').forEach(btn => { btn.style.borderColor = "#555"; btn.style.color = "#fff"; }); let btnElement = document.getElementById('btn-status-active'); if(btnElement) { btnElement.style.borderColor = "#0f0"; btnElement.style.color = "#0f0"; } if (bleedoutTimer) { clearTimeout(bleedoutTimer); bleedoutTimer = null; window.bleedoutEndTime = null; } alert("Sei stato curato/rianimato da un Operatore!"); }
-                if (data.team && data.team !== myTeam) { myTeam = data.team; document.getElementById('team-name-hud').innerText = myTeam; alert("SEI STATO ASSIMILATO!\nOra fai parte della squadra " + myTeam); document.getElementById('p-team').value = myTeam; }
-            }
-        });
-
-        onValue(ref(db, 'dmz_players'), (snap) => {
-            if(!isDeployed) return; const players = snap.val() || {}; let isUAV = globalSettings.uav_active || localUAVActive;
-            
-            // AGGIORNAMENTO LISTA COMPAGNI SU HUD
-            let teamList = []; Object.keys(players).forEach(k => { if(players[k].team === myTeam && players[k].status !== 'exfil') teamList.push(players[k].name); });
-            document.getElementById('team-list-hud').innerText = teamList.join(', ');
-
-            Object.keys(markers).forEach(k => { 
-                let p = players[k]; let isGasVis = p && p.in_gas && globalSettings.gas_config && globalSettings.gas_config.visibility;
-                if(!p || p.status === 'exfil' || (p.team !== myTeam && p.status !== "dead" && !isUAV && !isGasVis && !p.has_cargo)) { map.removeLayer(markers[k]); delete markers[k]; } 
-            });
-
-            let huntTargetFound = false;
-            Object.keys(players).forEach(k => {
-                if (k === myId) return; const p = players[k]; 
-                
-                // FIX CRASH GPS (Safety check fondamentale)
-                if (!p || p.status === 'exfil' || p.lat === undefined || p.lng === undefined) return;
-                
-                if (myContract && myContract.type === 'HUNT' && myContract.targetId === k) {
-                    huntTargetFound = true;
-                    if (p.status !== 'active') { alert("BERSAGLIO TAGLIA ELIMINATO! +$10000"); myCash += 10000; updateEconomyHUD(); myContract = null; if(window.huntCircle) { map.removeLayer(window.huntCircle); window.huntCircle = null; } } 
-                    else { if (!window.huntCircle) window.huntCircle = L.circle([p.lat, p.lng], {color: '#f00', fillOpacity: 0.2, radius: 80, dashArray: '10,10'}).addTo(map); else window.huntCircle.setLatLng([p.lat, p.lng]); }
-                }
-
-                let isGasVis = p.in_gas && globalSettings.gas_config && globalSettings.gas_config.visibility;
-                if (p.team === myTeam || p.status === "dead" || isUAV || isGasVis || p.has_cargo) {
-                    let c = (p.team===myTeam)?"#0f0":"#f00", s = ""; 
-                    if(p.status==="down"){c="#ffa500";s="🏥";} else if(p.status==="dead"){c="#555";s="💀";} else if(p.has_cargo && p.team!==myTeam){c="#ff0";s="📦";}
-                    let ic = L.divIcon({ className:'custom-icon', html:`<div style="width:20px;height:20px;background:${c};border:2px solid #000;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:12px; pointer-events:none;">${s}</div><div class="teammate-label" style="color:${c};">${p.name}</div>`, iconSize:[20,20] });
-                    if(!markers[k]) markers[k] = L.marker([p.lat, p.lng], {icon:ic}).addTo(map); else { markers[k].setIcon(ic); markers[k].setLatLng([p.lat, p.lng]); }
-                }
-            });
-
-            if (myContract && myContract.type === 'HUNT') {
-                if (!huntTargetFound) { alert("Bersaglio disconnesso/estratto."); myContract = null; if(window.huntCircle) { map.removeLayer(window.huntCircle); window.huntCircle = null; } }
-                else if (Date.now() > myContract.endTime) { alert("Tempo scaduto per la taglia. Contratto fallito."); myContract = null; if(window.huntCircle) { map.removeLayer(window.huntCircle); window.huntCircle = null; } }
-            }
-        });
-        
-        onChildAdded(ref(db, 'dmz_logs'), (snapshot) => {
-            if(!isDeployed) return; let data = snapshot.val(); if (Date.now() - data.timestamp > 300000) return; 
-            let logBox = document.getElementById('combat-log'); let div = document.createElement('div');
-            let d = new Date(data.timestamp); let timeStr = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
-            div.className = "log-entry"; div.innerHTML = `<span class="time">[${timeStr}]</span> ${data.msg}`; logBox.appendChild(div);
-            if(logBox.children.length > 5) logBox.removeChild(logBox.firstChild); 
-            setTimeout(() => { if (div.parentNode === logBox) { logBox.removeChild(div); } }, 15000);
-        });
-
-        onChildAdded(ref(db, 'dmz_pings'), (snapshot) => {
-            if(!isDeployed) return; const ping = snapshot.val();
-            if (Date.now() - ping.timestamp <= 15000 && ping.team === myTeam && ping.lat !== undefined && ping.lng !== undefined) { 
-                let pingMarker = L.marker([ping.lat, ping.lng], {icon: L.divIcon({ className: 'custom-ping', html: `<div style="width:24px; height:24px;" class="ping-icon">⚠️</div><div class="teammate-label" style="color:#ff0; margin-top:-35px; width:150px; margin-left:-65px;">PING: ${ping.sender}</div>`, iconSize: [24, 24] }) }).addTo(map); 
-                setTimeout(() => { if (map.hasLayer(pingMarker)) map.removeLayer(pingMarker); }, 10000); 
-            }
-        });
-        onDisconnect(ref(db, 'dmz_players/' + myId)).remove();
-    }
-    window.centerMap = function() { if(myMarker) map.setView(myMarker.getLatLng(), 18); };
-</script>
-</body>
-</html>
+        }, (err) =>
