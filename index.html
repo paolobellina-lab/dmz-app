@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DMZ">
 <meta name="theme-color" content="#000000">
-<title>DMZ: TACTICAL MAP v3.2</title>
+<title>DMZ: TACTICAL MAP v3.3</title>
 
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -17,7 +17,7 @@
 <style>
     /* STILE GRAFICO INTEGRATO E TACTICAL ALERTS */
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-    body { margin: 0; padding: 0; background: #000; font-family: 'Share Tech Mono', 'Courier New', monospace; overflow: hidden; color: #0f0; }
+    body { margin: 0; padding: 0; background: #000; font-family: 'Share Tech Mono', 'Courier New', monospace; overflow: hidden; color: #0f0; overscroll-behavior-y: none; }
     .full-screen-ui { position: absolute; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle at center, #0a150a 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     h1 { color: #fff; text-shadow: 0 0 15px #0f0, 0 0 5px #0f0; font-size: 36px; letter-spacing: 4px; margin-bottom: 5px; text-align: center; }
     .version-tag { color: #0a0; font-size: 14px; margin-bottom: 20px; font-weight: bold; letter-spacing: 2px; }
@@ -41,7 +41,6 @@
     #emp-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #050000; z-index: 5000; display: none; flex-direction: column; justify-content: center; align-items: center; color: #f00; font-family: monospace; font-size: 24px; font-weight: bold; text-align: center; text-shadow: 0 0 20px #f00; }
     #revive-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 40, 0, 0.95); z-index: 6000; display: none; flex-direction: column; justify-content: center; align-items: center; color: #0f0; font-family: 'Share Tech Mono', monospace; font-size: 24px; text-align: center; text-shadow: 0 0 15px #0f0; }
     
-    /* HUD TOP - CORREZIONE VISIBILITA' */
     #hud-top-container { position: absolute; top: 0; left: 0; width: 100%; z-index: 1000; display: flex; flex-direction: column; pointer-events: none; }
     #obj-banner { width: 100%; background: rgba(0, 15, 0, 0.85); border-bottom: 2px solid #0f0; padding: 10px 0; color: #0f0; font-weight: bold; font-size: 16px; text-shadow: 0 0 8px #0f0; text-align: center; letter-spacing: 1px; backdrop-filter: blur(5px); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
     #team-banner { background: rgba(0,0,0,0.6); color: #fff; font-size: 10px; padding: 4px; text-align: center; border-bottom: 1px solid #555; }
@@ -103,7 +102,7 @@
 
 <div id="login-screen" class="full-screen-ui">
     <h1>DMZ: DEPLOY</h1>
-    <div class="version-tag">PLAYER TERMINAL v3.2</div>
+    <div class="version-tag">PLAYER TERMINAL v3.3</div>
     
     <div id="status-label" class="status-label">CONNESSIONE...</div>
     
@@ -686,7 +685,6 @@
                 
                 isDeployed = true; document.getElementById('team-name-hud').innerText = myTeam;
                 
-                // FORZA VISIBILITA' HUD SOLDI
                 let ecoBox = document.getElementById('hud-economy-box');
                 if (globalSettings.economy_active === false && globalSettings.backpack_active === false) { ecoBox.style.display = 'none'; } else {
                     ecoBox.style.display = 'flex';
@@ -943,6 +941,13 @@
     async function keepScreenAwake() { try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); console.log("Wake Lock attivo."); } } catch (err) { } }
     document.addEventListener('visibilitychange', () => { if (wakeLock !== null && document.visibilityState === 'visible') keepScreenAwake(); });
     document.addEventListener('click', keepScreenAwake, { once: true });
+
+    // --- BLOCCO TASTO INDIETRO (ANTI-USCITA ACCIDENTALE) ---
+    window.history.pushState({ page: 1 }, "", "");
+    window.addEventListener('popstate', function(event) {
+        window.history.pushState({ page: 1 }, "", "");
+        tacticalAlert("Tasto Indietro del telefono disabilitato per evitare disconnessioni accidentali. Usa i tasti a schermo.", "SISTEMA BLOCCATO");
+    });
 </script>
 </body>
 </html>
