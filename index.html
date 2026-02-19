@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DMZ">
 <meta name="theme-color" content="#000000">
-<title>DMZ: TACTICAL MAP v2.9</title>
+<title>DMZ: TACTICAL MAP v3.0</title>
 
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -15,7 +15,7 @@
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
 <style>
-    /* STILE GRAFICO INTEGRATO (ANTI-SCHERMATA BIANCA) */
+    /* STILE GRAFICO INTEGRATO E TACTICAL ALERTS */
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
     body { margin: 0; padding: 0; background: #000; font-family: 'Share Tech Mono', 'Courier New', monospace; overflow: hidden; color: #0f0; }
     .full-screen-ui { position: absolute; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle at center, #0a150a 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -76,13 +76,32 @@
     .ping-icon { background: rgba(255, 0, 0, 0.8); border: 2px solid #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; box-shadow: 0 0 15px #f00; animation: ping-pulse 1s infinite; }
     @keyframes ping-pulse { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }
     #targeting-overlay { position: absolute; top: 120px; left: 50%; transform: translateX(-50%); background: rgba(255,0,0,0.85); color: white; padding: 15px 25px; border: 1px solid #f00; z-index: 2000; display: none; text-align: center; pointer-events: none; box-shadow: 0 0 30px #f00; font-size: 14px; letter-spacing: 1px; clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); backdrop-filter: blur(5px); }
+
+    /* NUOVO: TACTICAL ALERT SYSTEM CSS */
+    #tactical-alert-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 9999; display: none; justify-content: center; align-items: center; }
+    #tactical-alert-box { background: #0a0505; border: 2px solid #f00; padding: 25px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 0 30px rgba(255,0,0,0.5); clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); }
+    #tactical-alert-title { color: #f00; margin-top: 0; margin-bottom: 15px; font-size: 20px; letter-spacing: 2px; border-bottom: 1px solid #f00; padding-bottom: 5px; }
+    #tactical-alert-msg { color: #fff; font-size: 14px; margin-bottom: 25px; line-height: 1.5; white-space: pre-line; }
+    .tactical-btn { background: #300; border: 1px solid #f00; color: #fff; padding: 10px 15px; font-family: 'Share Tech Mono', monospace; cursor: pointer; transition: 0.2s; flex: 1; font-size: 14px; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
+    .tactical-btn:active { background: #f00; color: #000; }
+    .tactical-btn-ok { background: #030; border-color: #0f0; color: #0f0; }
+    .tactical-btn-ok:active { background: #0f0; color: #000; }
 </style>
 </head>
 <body>
 
+<div id="tactical-alert-overlay">
+    <div id="tactical-alert-box">
+        <h3 id="tactical-alert-title">SYSTEM MESSAGE</h3>
+        <div id="tactical-alert-msg">Message here</div>
+        <div id="tactical-alert-btns" style="display: flex; gap: 10px; justify-content: center;">
+            </div>
+    </div>
+</div>
+
 <div id="login-screen" class="full-screen-ui">
     <h1>DMZ: DEPLOY</h1>
-    <div class="version-tag">PLAYER TERMINAL v2.9</div>
+    <div class="version-tag">PLAYER TERMINAL v3.0</div>
     
     <div id="status-label" class="status-label">CONNESSIONE...</div>
     
@@ -205,6 +224,40 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // MOTORE TACTICAL ALERTS (SOSTITUISCE ALERT E CONFIRM NATIVI)
+    window.tacticalAlert = function(msg, title = "SYSTEM ALERT", isGood = false) {
+        document.getElementById('tactical-alert-title').innerText = title;
+        document.getElementById('tactical-alert-title').style.color = isGood ? "#0f0" : "#f00";
+        document.getElementById('tactical-alert-title').style.borderColor = isGood ? "#0f0" : "#f00";
+        document.getElementById('tactical-alert-box').style.borderColor = isGood ? "#0f0" : "#f00";
+        document.getElementById('tactical-alert-box').style.boxShadow = isGood ? "0 0 30px rgba(0,255,0,0.5)" : "0 0 30px rgba(255,0,0,0.5)";
+        document.getElementById('tactical-alert-msg').innerText = msg;
+        
+        let btnColor = isGood ? "tactical-btn-ok" : "";
+        document.getElementById('tactical-alert-btns').innerHTML = `<button class="tactical-btn ${btnColor}" onclick="closeTacticalAlert()">RICEVUTO</button>`;
+        document.getElementById('tactical-alert-overlay').style.display = 'flex';
+    };
+
+    window.tacticalConfirm = function(msg, onConfirmCallback) {
+        document.getElementById('tactical-alert-title').innerText = "RICHIESTA CONFERMA";
+        document.getElementById('tactical-alert-title').style.color = "#ff0";
+        document.getElementById('tactical-alert-title').style.borderColor = "#ff0";
+        document.getElementById('tactical-alert-box').style.borderColor = "#ff0";
+        document.getElementById('tactical-alert-box').style.boxShadow = "0 0 30px rgba(255,255,0,0.5)";
+        document.getElementById('tactical-alert-msg').innerText = msg;
+        
+        window.tempConfirmCallback = onConfirmCallback;
+        document.getElementById('tactical-alert-btns').innerHTML = `
+            <button class="tactical-btn tactical-btn-ok" onclick="closeTacticalAlert(); window.tempConfirmCallback();">CONFERMA</button>
+            <button class="tactical-btn" style="background:#222; border-color:#555;" onclick="closeTacticalAlert()">ANNULLA</button>
+        `;
+        document.getElementById('tactical-alert-overlay').style.display = 'flex';
+    };
+
+    window.closeTacticalAlert = function() {
+        document.getElementById('tactical-alert-overlay').style.display = 'none';
+    };
+
     const masterBasesDB = [
         { id: "B1", lat: 45.679325, lng: 9.895191 }, { id: "B2", lat: 45.679668, lng: 9.896275 }, { id: "B3", lat: 45.679326, lng: 9.897387 }, { id: "B4", lat: 45.679367, lng: 9.899083 },
         { id: "B5", lat: 45.679264, lng: 9.900673 }, { id: "B6", lat: 45.680613, lng: 9.900875 }, { id: "B7", lat: 45.679424, lng: 9.90205 }, { id: "B8", lat: 45.679779, lng: 9.894188 },
@@ -239,7 +292,6 @@
             if(sl) sl.innerText = "🟢 PARTITA IN CORSO"; if(sl) sl.className = "status-label running"; if(bd) bd.style.display = "block";
             let sgs = document.getElementById('start-gear-selection'); let sgo = document.getElementById('start-gear-options');
             
-            // GESTIONE BLOCCHI IN FASE DI LOGIN
             if (!isDeployed && globalSettings.start_gear_config) {
                 if (globalSettings.backpack_active === false) {
                     if(sgs) sgs.style.display = 'none';
@@ -255,10 +307,9 @@
 
         } else {
             if(sl) sl.innerText = "🔴 IN ATTESA DEL MASTER"; if(sl) sl.className = "status-label"; if(bd) bd.style.display = "none"; let sgs = document.getElementById('start-gear-selection'); if(sgs) sgs.style.display = 'none';
-            if (isDeployed) { alert("Partita Terminata!"); window.location.reload(); }
+            if (isDeployed) { tacticalAlert("La partita è stata terminata dal Comando."); setTimeout(()=> window.location.reload(), 3000); }
         }
         
-        // GESTIONE HUD DURANTE IL GIOCO
         if (isDeployed) { 
             let ecoBox = document.getElementById('hud-economy-box');
             let txtCash = document.getElementById('txt-cash');
@@ -285,8 +336,8 @@
     });
 
     window.openStash = function() {
-        if(globalSettings && globalSettings.backpack_active === false) return alert("Sistema Magazzino/Zaino disabilitato in questa partita.");
-        let n = document.getElementById('p-name').value.trim().toUpperCase(); if(!n) return alert("Inserisci il Nome Operatore per accedere al magazzino.");
+        if(globalSettings && globalSettings.backpack_active === false) return tacticalAlert("Sistema Magazzino/Zaino disabilitato in questa partita.");
+        let n = document.getElementById('p-name').value.trim().toUpperCase(); if(!n) return tacticalAlert("Inserisci il Nome Operatore per accedere al magazzino.");
         myName = n; let safeName = myName.replace(/[^A-Z0-9]/g, '');
         get(ref(db, 'dmz_stash/' + safeName)).then((snap) => {
             myStash = snap.val() || { cash: 0, items: [] }; if(!myStash.items) myStash.items = [];
@@ -306,15 +357,22 @@
     }
 
     function saveStashState() { let safeName = myName.replace(/[^A-Z0-9]/g, ''); update(ref(db, 'dmz_stash/' + safeName), myStash); if(isDeployed) updateEconomyHUD(); }
-    window.transferMoney = function(dir) { let amt = parseInt(prompt("Inserisci l'importo:")); if(!amt || isNaN(amt) || amt <= 0) return; if(dir === 'TO_LOADOUT' && myStash.cash >= amt) { myStash.cash -= amt; myCash += amt; } else if(dir === 'TO_STASH' && myCash >= amt) { myCash -= amt; myStash.cash += amt; } else alert("Fondi insufficienti."); saveStashState(); renderStashUI(); };
-    window.sellStashItem = function(idx) { let it = myStash.items[idx]; if(confirm(`Vendere ${it.name} per $${it.value}? L'oggetto andrà perso.`)) { myStash.cash += it.value; myStash.items.splice(idx, 1); saveStashState(); renderStashUI(); } };
-    window.equipStashItem = function(idx) { if(myBackpack.length >= 5) return alert("Zaino pieno (Max 5)!"); let it = myStash.items.splice(idx, 1)[0]; myBackpack.push(it); saveStashState(); renderStashUI(); };
+    window.transferMoney = function(dir) { let amt = parseInt(prompt("Inserisci l'importo:")); if(!amt || isNaN(amt) || amt <= 0) return; if(dir === 'TO_LOADOUT' && myStash.cash >= amt) { myStash.cash -= amt; myCash += amt; } else if(dir === 'TO_STASH' && myCash >= amt) { myCash -= amt; myStash.cash += amt; } else tacticalAlert("Fondi insufficienti."); saveStashState(); renderStashUI(); };
+    
+    window.sellStashItem = function(idx) { 
+        let it = myStash.items[idx]; 
+        tacticalConfirm(`Vendere ${it.name} per $${it.value}? L'oggetto andrà perso.`, () => { 
+            myStash.cash += it.value; myStash.items.splice(idx, 1); saveStashState(); renderStashUI(); 
+        }); 
+    };
+    
+    window.equipStashItem = function(idx) { if(myBackpack.length >= 5) return tacticalAlert("Zaino pieno (Max 5)!"); let it = myStash.items.splice(idx, 1)[0]; myBackpack.push(it); saveStashState(); renderStashUI(); };
     window.unequipStashItem = function(idx) { let it = myBackpack.splice(idx, 1)[0]; myStash.items.push(it); saveStashState(); renderStashUI(); };
     window.closeStash = function() { document.getElementById('stash-modal').style.display = 'none'; };
 
     window.openShop = function() {
-        if (globalSettings && globalSettings.economy_active === false) return alert("Sistema Economico disabilitato in questa partita.");
-        if (!globalSettings.shop_config || !globalSettings.shop_config.enabled) return alert("Negozio chiuso.");
+        if (globalSettings && globalSettings.economy_active === false) return tacticalAlert("Sistema Economico disabilitato in questa partita.");
+        if (!globalSettings.shop_config || !globalSettings.shop_config.enabled) return tacticalAlert("Negozio chiuso.");
         const bCont = document.getElementById('shop-items-container'); bCont.innerHTML = ""; 
         let pool = globalSettings.shop_config.pool || [];
         pool.forEach((item, idx) => { bCont.innerHTML += `<div class="locker-item" style="border-color:#0aa; flex-direction:column; align-items:flex-start;"><span>${item.name}</span><div style="width:100%; display:flex; justify-content:space-between; margin-top:5px;"><span style="color:#8f8;">$${item.price}</span><button class="locker-btn" onclick="buyItem(${idx})">COMPRA</button></div></div>`; });
@@ -324,7 +382,7 @@
         if(sCont.innerHTML === "") sCont.innerHTML = "<div style='color:#555; font-size:10px; text-align:center;'>Zaino vuoto o nessun oggetto di valore.</div>";
         document.getElementById('shop-modal').style.display = 'flex';
     };
-    window.buyItem = function(idx) { let item = globalSettings.shop_config.pool[idx]; if (myCash >= item.price) { if(globalSettings.backpack_active !== false && myBackpack.length >= 5) return alert("Zaino Pieno!"); myCash -= item.price; let nIt = {...item}; if(nIt.name.includes("CHIAVE")) nIt.uses = 3; if(globalSettings.backpack_active !== false) myBackpack.push(nIt); updateEconomyHUD(); window.openShop(); logEvent(`🛒 ${myName} ha acquistato ${item.name}.`); } else alert("Fondi insufficienti!"); };
+    window.buyItem = function(idx) { let item = globalSettings.shop_config.pool[idx]; if (myCash >= item.price) { if(globalSettings.backpack_active !== false && myBackpack.length >= 5) return tacticalAlert("Zaino Pieno!"); myCash -= item.price; let nIt = {...item}; if(nIt.name.includes("CHIAVE")) nIt.uses = 3; if(globalSettings.backpack_active !== false) myBackpack.push(nIt); updateEconomyHUD(); window.openShop(); logEvent(`🛒 ${myName} ha acquistato ${item.name}.`); } else tacticalAlert("Fondi insufficienti!"); };
     window.sellBackpackItem = function(idx, val) { myCash += val; myBackpack.splice(idx, 1); updateEconomyHUD(); window.openShop(); };
     window.closeShop = function() { document.getElementById('shop-modal').style.display = 'none'; };
 
@@ -346,7 +404,7 @@
     }
     function saveLockerState() { if (currentLockerType === 'PLAYER') { update(ref(db, `dmz_players/${currentLockerCode}`), { cash: currentLockerData.money, backpack: currentLockerData.items || [] }); } else { update(ref(db, `dmz_lockers/${currentLockerCode}`), currentLockerData); } }
     window.takeMoney = function() { myCash += currentLockerData.money; currentLockerData.money = 0; updateEconomyHUD(); saveLockerState(); renderLockerUI(); };
-    window.takeItem = function(idx) { if (myBackpack.length >= 5) return alert("Zaino pieno!"); let it = currentLockerData.items.splice(idx, 1)[0]; myBackpack.push(it); updateEconomyHUD(); saveLockerState(); renderLockerUI(); };
+    window.takeItem = function(idx) { if (myBackpack.length >= 5) return tacticalAlert("Zaino pieno!"); let it = currentLockerData.items.splice(idx, 1)[0]; myBackpack.push(it); updateEconomyHUD(); saveLockerState(); renderLockerUI(); };
     window.depositItem = function(idx) { let it = myBackpack.splice(idx, 1)[0]; if(!currentLockerData.items) currentLockerData.items = []; currentLockerData.items.push(it); updateEconomyHUD(); saveLockerState(); renderLockerUI(); };
     window.closeLocker = function() { document.getElementById('locker-modal').style.display = 'none'; currentLockerCode = null; currentLockerData = null; };
 
@@ -381,32 +439,41 @@
         document.getElementById('backpack-modal').style.display = 'flex';
     };
     window.closeBackpack = function() { document.getElementById('backpack-modal').style.display = 'none'; };
-    window.discardItem = function(idx) { if(confirm(`Vuoi abbandonare ${myBackpack[idx].name}? Andrà perso.`)) { myBackpack.splice(idx, 1); updateEconomyHUD(); openBackpack(); } };
+    window.discardItem = function(idx) { 
+        tacticalConfirm(`Vuoi abbandonare ${myBackpack[idx].name}? Andrà perso.`, () => { 
+            myBackpack.splice(idx, 1); updateEconomyHUD(); openBackpack(); 
+        }); 
+    };
     
     window.useItem = function(idx, type) {
-        if (myStatus !== 'active' && type !== 'MEDIC') return alert("Non puoi usare l'oggetto da terra."); let item = myBackpack[idx];
-        if (type === 'MEDIC') { if (myStatus === 'active') return alert("Sei curato!"); if (myStatus === 'dead') return alert("Sei eliminato."); alert(`Usato ${item.name}.`); myBackpack.splice(idx, 1); updateEconomyHUD(); openBackpack(); setStatus('active'); } 
-        else if (type === 'UAV') { alert(`Radar locale attivo 30s.`); myBackpack.splice(idx, 1); updateEconomyHUD(); closeBackpack(); localUAVActive = true; update(ref(db, 'dmz_players/' + myId), { lastUpdate: Date.now() }); setTimeout(() => { localUAVActive = false; update(ref(db, 'dmz_players/' + myId), { lastUpdate: Date.now() }); }, 30000); logEvent(`📡 ${myName} ha attivato un UAV locale.`); }
-        else if (type === 'CUAV') { alert(`UAV Disturbo Lanciato!`); myBackpack.splice(idx, 1); updateEconomyHUD(); closeBackpack(); update(ref(db, 'dmz_streaks/cuav'), { active: true, team: myTeam, endTime: Date.now() + 60000 }); logEvent(`📡 SQUADRA ${myTeam} ha lanciato un UAV di disturbo.`); }
-        else if (type === 'EMP') { alert(`Impulso EMP Inviato!`); myBackpack.splice(idx, 1); updateEconomyHUD(); closeBackpack(); update(ref(db, 'dmz_streaks/emp'), { active: true, team: myTeam, endTime: Date.now() + 60000 }); logEvent(`⚡ SQUADRA ${myTeam} ha innescato un EMP.`); }
-        else if (type === 'DROP') { alert(`Drop in arrivo!`); myBackpack.splice(idx, 1); updateEconomyHUD(); closeBackpack(); update(ref(db, `dmz_lockers/DROP_${Math.floor(Math.random()*9999)}`), { money: 5000, items: [{name: "CHIAVE UNIVERSALE", value: 5000, uses: 3}, {name: "Hard Disk Segreto", value: 5000}], lat: myMarker.getLatLng().lat, lng: myMarker.getLatLng().lng }); logEvent(`📦 Drop tattico richiesto.`); }
+        if (myStatus !== 'active' && type !== 'MEDIC') return tacticalAlert("Non puoi usare l'oggetto da terra."); let item = myBackpack[idx];
+        if (type === 'MEDIC') { if (myStatus === 'active') return tacticalAlert("Sei curato!"); if (myStatus === 'dead') return tacticalAlert("Sei eliminato."); tacticalAlert(`Usato ${item.name}.`, "MEDIC", true); myBackpack.splice(idx, 1); updateEconomyHUD(); openBackpack(); setStatus('active'); } 
+        else if (type === 'UAV') { tacticalAlert(`Radar locale attivo 30s.`, "UAV ON", true); myBackpack.splice(idx, 1); updateEconomyHUD(); closeBackpack(); localUAVActive = true; update(ref(db, 'dmz_players/' + myId), { lastUpdate: Date.now() }); setTimeout(() => { localUAVActive = false; update(ref(db, 'dmz_players/' + myId), { lastUpdate: Date.now() }); }, 30000); logEvent(`📡 ${myName} ha attivato un UAV locale.`); }
+        else if (type === 'CUAV') { tacticalAlert(`UAV Disturbo Lanciato!`); myBackpack.splice(idx, 1); updateEconomyHUD(); closeBackpack(); update(ref(db, 'dmz_streaks/cuav'), { active: true, team: myTeam, endTime: Date.now() + 60000 }); logEvent(`📡 SQUADRA ${myTeam} ha lanciato un UAV di disturbo.`); }
+        else if (type === 'EMP') { tacticalAlert(`Impulso EMP Inviato!`); myBackpack.splice(idx, 1); updateEconomyHUD(); closeBackpack(); update(ref(db, 'dmz_streaks/emp'), { active: true, team: myTeam, endTime: Date.now() + 60000 }); logEvent(`⚡ SQUADRA ${myTeam} ha innescato un EMP.`); }
+        else if (type === 'DROP') { tacticalAlert(`Drop in arrivo!`, "SUPPORT", true); myBackpack.splice(idx, 1); updateEconomyHUD(); closeBackpack(); update(ref(db, `dmz_lockers/DROP_${Math.floor(Math.random()*9999)}`), { money: 5000, items: [{name: "CHIAVE UNIVERSALE", value: 5000, uses: 3}, {name: "Hard Disk Segreto", value: 5000}], lat: myMarker.getLatLng().lat, lng: myMarker.getLatLng().lng }); logEvent(`📦 Drop tattico richiesto.`); }
         else if (type === 'AIRSTRIKE') { closeBackpack(); document.getElementById('targeting-overlay').style.display = 'block'; isTargetingAirstrike = true; window.airstrikeIdxPending = idx; }
     };
 
-    function consumeKey(targetCode) {
+    function consumeKey(targetCode, onSuccessCallback) {
         let isBase = targetCode.startsWith('B'); let isLocker = targetCode.startsWith('A');
-        if (isBase && (!globalSettings.keys_bases)) return true;
-        if (isLocker && (!globalSettings.keys_lockers)) return true;
+        if (isBase && (!globalSettings.keys_bases)) { onSuccessCallback(); return; }
+        if (isLocker && (!globalSettings.keys_lockers)) { onSuccessCallback(); return; }
         
         let targetKeyName = `CHIAVE ${targetCode}`; let specificIdx = myBackpack.findIndex(i => i.name === targetKeyName); let univIdx = myBackpack.findIndex(i => i.name === "CHIAVE UNIVERSALE"); let idxToUse = specificIdx > -1 ? specificIdx : univIdx;
+        
         if (idxToUse > -1) {
             let key = myBackpack[idxToUse]; if (key.uses === undefined) key.uses = 3;
-            if (confirm(`Serratura bloccata. Usare ${key.name}?\n(Usi rimanenti: ${key.uses}/3)`)) {
-                key.uses -= 1; if (key.uses <= 0) { myBackpack.splice(idxToUse, 1); alert(`Porta sbloccata!\nLa ${key.name} si è rotta.`); } else { alert(`Porta sbloccata!\nUsi: ${key.uses}/3.`); }
-                updateEconomyHUD(); return true;
-            } else return false;
+            tacticalConfirm(`Serratura bloccata. Usare ${key.name}?\n(Usi rimanenti: ${key.uses}/3)`, () => {
+                key.uses -= 1; 
+                if (key.uses <= 0) { myBackpack.splice(idxToUse, 1); tacticalAlert(`Porta sbloccata!\nLa ${key.name} si è rotta.`, "UNLOCK", true); } 
+                else { tacticalAlert(`Porta sbloccata!\nUsi: ${key.uses}/3.`, "UNLOCK", true); }
+                updateEconomyHUD(); 
+                onSuccessCallback();
+            });
+            return; // Ferma il codice qui finché l'utente non sceglie nel modal
         }
-        alert(`ACCESSO NEGATO: Serve CHIAVE ${targetCode} o UNIVERSALE.`); return false;
+        tacticalAlert(`ACCESSO NEGATO: Serve CHIAVE ${targetCode} o UNIVERSALE.`);
     }
 
     let actionTargetCode = null; let actionTargetData = null;
@@ -414,19 +481,19 @@
     window.executePlayerAction = function(action) {
         closePlayerAction();
         if (action === 'LOOT') {
-            if (globalSettings && globalSettings.backpack_active === false) return alert("Sistema loot disabilitato in questa partita.");
-            if (myContract && myContract.type === 'HUNT' && myContract.targetId === actionTargetCode) { alert("BERSAGLIO TAGLIA ELIMINATO E DERUBATO! +$10000"); myCash += 10000; myContract = null; updateEconomyHUD(); document.getElementById('obj-status').innerText = `OBIETTIVO: SOPRAVVIVENZA`; document.getElementById('obj-status').style.color = "#0f0"; logEvent(`🎯 Taglia completata.`); }
+            if (globalSettings && globalSettings.backpack_active === false) return tacticalAlert("Sistema loot disabilitato in questa partita.");
+            if (myContract && myContract.type === 'HUNT' && myContract.targetId === actionTargetCode) { tacticalAlert("BERSAGLIO TAGLIA ELIMINATO E DERUBATO!\n+$10000", "REWARD", true); myCash += 10000; myContract = null; updateEconomyHUD(); document.getElementById('obj-status').innerText = `OBIETTIVO: SOPRAVVIVENZA`; document.getElementById('obj-status').style.color = "#0f0"; logEvent(`🎯 Taglia completata.`); }
             openLockerUI(actionTargetCode, {money: actionTargetData.cash || 0, items: actionTargetData.backpack || []}, 'PLAYER');
         } 
         else if (action === 'REVIVE') {
             let revivesLeft = actionTargetData.revives_left !== undefined ? actionTargetData.revives_left : (globalSettings.medic_config ? globalSettings.medic_config.maxRevives : 1);
-            if (revivesLeft <= 0) return alert("L'operatore ha esaurito le rianimazioni totali. Eliminazione definitiva.");
+            if (revivesLeft <= 0) return tacticalAlert("L'operatore ha esaurito le rianimazioni totali. Eliminazione definitiva.");
             document.getElementById('revive-overlay').style.display = 'flex'; let timeLeft = 10; document.getElementById('revive-timer').innerText = timeLeft;
             window.reviveInterval = setInterval(() => {
                 timeLeft--; document.getElementById('revive-timer').innerText = timeLeft;
                 if (timeLeft <= 0) {
                     clearInterval(window.reviveInterval); document.getElementById('revive-overlay').style.display = 'none';
-                    update(ref(db, 'dmz_players/' + actionTargetCode), { status: 'active', team: myTeam, revives_left: revivesLeft - 1 }); alert("Operatore assimilato alla squadra!"); logEvent(`🤝 SQUADRA ${myTeam} ha assimilato un operatore.`);
+                    update(ref(db, 'dmz_players/' + actionTargetCode), { status: 'active', team: myTeam, revives_left: revivesLeft - 1 }); tacticalAlert("Operatore assimilato alla squadra!", "ASSIMILATION", true); logEvent(`🤝 SQUADRA ${myTeam} ha assimilato un operatore.`);
                 }
             }, 1000);
         }
@@ -434,10 +501,9 @@
     window.cancelRevive = function() { if (window.reviveInterval) clearInterval(window.reviveInterval); document.getElementById('revive-overlay').style.display = 'none'; };
 
     let html5QrCode = null;
-    
     window.openScanner = function() { 
-        if(myStatus !== 'active') return alert("Sei a terra o eliminato!"); 
-        if(document.getElementById('emp-overlay').style.display === 'flex') return alert("SISTEMA BLOCCATO DA EMP.");
+        if(myStatus !== 'active') return tacticalAlert("Sei a terra o eliminato!"); 
+        if(document.getElementById('emp-overlay').style.display === 'flex') return tacticalAlert("SISTEMA BLOCCATO DA EMP.");
         document.getElementById('scanner-modal').style.display = 'flex'; document.getElementById('manual-code-input').value = ""; 
         
         setTimeout(() => {
@@ -462,93 +528,95 @@
         let code = document.getElementById('manual-code-input').value.trim().toUpperCase(); if(!code) return; closeScanner();
         
         if (code.startsWith('A')) {
-            if (globalSettings && globalSettings.backpack_active === false) return alert("Casse e Loot disabilitati in questa partita.");
+            if (globalSettings && globalSettings.backpack_active === false) return tacticalAlert("Casse e Loot disabilitati in questa partita.");
             let isRare = globalSettings.keys_lockers ? true : false;
-            if (isRare) { if (!consumeKey(code)) return; }
             
-            if (myContract && (myContract.type === 'INTEL' || myContract.type === 'NUKE') && myContract.state === 'FETCH') {
-                let expectedBaseNum = myContract.targetId.replace('B', ''); let scannedBoxNum = code.replace('A', '');
-                if (expectedBaseNum === scannedBoxNum) {
-                    if(myBackpack.length >= 5) return alert("Devi avere 1 slot libero nello zaino!");
-                    if(myContract.type === 'NUKE') { alert("Materiale Nucleare recuperato! Estrai in sicurezza (C/E)!"); myBackpack.push({name: "BARRE DI URANIO", value: 12000}); logEvent(`☢️ Materiale nucleare messo in sicurezza.`); } 
-                    else { alert("Dati Segreti recuperati! Estrai in sicurezza (C/E)!"); myBackpack.push({name: "DATI SEGRETI", value: 8000}); logEvent(`💾 Dati recuperati nella zona.`); }
-                    myContract.state = 'DELIVER'; updateEconomyHUD(); 
-                    if(window.contractCircle) { map.removeLayer(window.contractCircle); window.contractCircle = null; } return;
-                }
-            }
-            get(ref(db, `dmz_lockers/${code}`)).then((snap) => { let lockerData = snap.val(); if (!lockerData) { lockerData = generateLockerContent(isRare); update(ref(db, `dmz_lockers/${code}`), lockerData); } openLockerUI(code, lockerData, 'LOCKER'); });
-        } 
-        else if (code.startsWith('B')) {
-            let baseExists = activeBases.find(b => b.id === code); if (!baseExists) return alert(`ERRORE: Base fuori area.`);
-            if (globalSettings.keys_bases) { if (!consumeKey(code)) return; }
-            
-            if (myContract) {
-                if (myContract.type === 'DESTROY' && myContract.targetId === code && myContract.state === 'GOTO') { alert("Bomba innescata! Difendete per 7 minuti."); myContract.state = 'ARMED'; myContract.endTime = Date.now() + (7 * 60000); logEvent(`💣 SQUADRA ${myTeam} ha innescato ordigno in ${baseExists.name}.`); return; }
-                return alert("Hai già un contratto in corso. O devi cercare nelle CASSE (A) in questa zona!");
-            }
-            if (globalSettings.contracts_config && globalSettings.contracts_config.enabled) {
-                let pool = globalSettings.contracts_config.pool;
-                if (pool && pool.length > 0) {
-                    let randomContract = pool[Math.floor(Math.random() * pool.length)];
-                    if (confirm(`BASE ${code} SBLOCCATA.\nCONTRATTO DISPONIBILE: "${randomContract}".\nAccettare?`)) { 
-                        if (randomContract === 'INTEL' || randomContract === 'DESTROY' || randomContract === 'NUKE') { 
-                            let pB = activeBases.filter(b => b.id !== code); if(pB.length===0) return alert("Nessuna Base libera."); 
-                            let targetBase = pB[Math.floor(Math.random() * pB.length)];
-                            myContract = { type: randomContract, targetId: targetBase.id, targetLat: targetBase.lat, targetLng: targetBase.lng, state: randomContract==='DESTROY'?'GOTO':'FETCH' }; 
-                            if(randomContract === 'NUKE') logEvent(`☢️ Sq. ${myTeam} cerca Materiale Nucleare.`); else logEvent(`📜 Sq. ${myTeam} avvia ${randomContract}.`); 
-                        }
-                        else if (randomContract === 'CARGO') { if (globalSettings && globalSettings.backpack_active === false) return alert("Contratto incompatibile con lo zaino spento."); if(myBackpack.length > 2) return alert("Servono 3 slot liberi!"); myBackpack.push({name: "CARICO PESANTE", value: 0}); myBackpack.push({name: "CARICO PESANTE", value: 0}); myBackpack.push({name: "CARICO PESANTE", value: 15000}); myContract = { type: 'CARGO', state: 'DELIVER' }; updateEconomyHUD(); logEvent(`📜 Sq. ${myTeam} trasporta CARICO PESANTE.`); }
-                        else if (randomContract === 'HUNT') {
-                            get(ref(db, 'dmz_players')).then((snap) => {
-                                let players = snap.val() || {}; let enemies = Object.keys(players).filter(k => players[k].team !== myTeam && players[k].status === 'active');
-                                if (enemies.length === 0) return alert("Nessun nemico vivo in campo.");
-                                let target = enemies[Math.floor(Math.random() * enemies.length)];
-                                myContract = { type: 'HUNT', targetId: target, state: 'HUNTING', endTime: Date.now() + (5 * 60000) }; alert(`Contratto accettato! Dai la caccia alla SQUADRA ${players[target].team}. Guarda la mappa!`);
-                                logEvent(`🎯 CACCIA ALLA SQUADRA avviata contro la ${players[target].team}.`);
-                            });
-                        }
+            consumeKey(code, () => {
+                if (myContract && (myContract.type === 'INTEL' || myContract.type === 'NUKE') && myContract.state === 'FETCH') {
+                    let expectedBaseNum = myContract.targetId.replace('B', ''); let scannedBoxNum = code.replace('A', '');
+                    if (expectedBaseNum === scannedBoxNum) {
+                        if(myBackpack.length >= 5) return tacticalAlert("Devi avere 1 slot libero nello zaino!");
+                        if(myContract.type === 'NUKE') { tacticalAlert("Materiale Nucleare recuperato!\nEstrai in sicurezza.", "OBJ SECURED", true); myBackpack.push({name: "BARRE DI URANIO", value: 12000}); logEvent(`☢️ Materiale nucleare messo in sicurezza.`); } 
+                        else { tacticalAlert("Dati Segreti recuperati!\nEstrai in sicurezza.", "OBJ SECURED", true); myBackpack.push({name: "DATI SEGRETI", value: 8000}); logEvent(`💾 Dati recuperati nella zona.`); }
+                        myContract.state = 'DELIVER'; updateEconomyHUD(); 
+                        if(window.contractCircle) { map.removeLayer(window.contractCircle); window.contractCircle = null; } return;
                     }
                 }
-            } else alert("Base sbloccata.");
+                get(ref(db, `dmz_lockers/${code}`)).then((snap) => { let lockerData = snap.val(); if (!lockerData) { lockerData = generateLockerContent(isRare); update(ref(db, `dmz_lockers/${code}`), lockerData); } openLockerUI(code, lockerData, 'LOCKER'); });
+            });
+        } 
+        else if (code.startsWith('B')) {
+            let baseExists = activeBases.find(b => b.id === code); if (!baseExists) return tacticalAlert(`ERRORE: Base fuori area.`);
+            
+            consumeKey(code, () => {
+                if (myContract) {
+                    if (myContract.type === 'DESTROY' && myContract.targetId === code && myContract.state === 'GOTO') { tacticalAlert("Bomba innescata! Difendete per 7 minuti.", "ARMED", true); myContract.state = 'ARMED'; myContract.endTime = Date.now() + (7 * 60000); logEvent(`💣 SQUADRA ${myTeam} ha innescato ordigno in ${baseExists.name}.`); return; }
+                    return tacticalAlert("Hai già un contratto in corso. O devi cercare nelle CASSE (A) in questa zona!");
+                }
+                if (globalSettings.contracts_config && globalSettings.contracts_config.enabled) {
+                    let pool = globalSettings.contracts_config.pool;
+                    if (pool && pool.length > 0) {
+                        let randomContract = pool[Math.floor(Math.random() * pool.length)];
+                        tacticalConfirm(`BASE ${code} SBLOCCATA.\nCONTRATTO DISPONIBILE: "${randomContract}".\nAccettare?`, () => { 
+                            if (randomContract === 'INTEL' || randomContract === 'DESTROY' || randomContract === 'NUKE') { 
+                                let pB = activeBases.filter(b => b.id !== code); if(pB.length===0) return tacticalAlert("Nessuna Base libera."); 
+                                let targetBase = pB[Math.floor(Math.random() * pB.length)];
+                                myContract = { type: randomContract, targetId: targetBase.id, targetLat: targetBase.lat, targetLng: targetBase.lng, state: randomContract==='DESTROY'?'GOTO':'FETCH' }; 
+                                if(randomContract === 'NUKE') logEvent(`☢️ Sq. ${myTeam} cerca Materiale Nucleare.`); else logEvent(`📜 Sq. ${myTeam} avvia ${randomContract}.`); 
+                            }
+                            else if (randomContract === 'CARGO') { if (globalSettings && globalSettings.backpack_active === false) return tacticalAlert("Contratto incompatibile con lo zaino spento."); if(myBackpack.length > 2) return tacticalAlert("Servono 3 slot liberi!"); myBackpack.push({name: "CARICO PESANTE", value: 0}); myBackpack.push({name: "CARICO PESANTE", value: 0}); myBackpack.push({name: "CARICO PESANTE", value: 15000}); myContract = { type: 'CARGO', state: 'DELIVER' }; updateEconomyHUD(); logEvent(`📜 Sq. ${myTeam} trasporta CARICO PESANTE.`); }
+                            else if (randomContract === 'HUNT') {
+                                get(ref(db, 'dmz_players')).then((snap) => {
+                                    let players = snap.val() || {}; let enemies = Object.keys(players).filter(k => players[k].team !== myTeam && players[k].status === 'active');
+                                    if (enemies.length === 0) return tacticalAlert("Nessun nemico vivo in campo.");
+                                    let target = enemies[Math.floor(Math.random() * enemies.length)];
+                                    myContract = { type: 'HUNT', targetId: target, state: 'HUNTING', endTime: Date.now() + (5 * 60000) }; tacticalAlert(`Contratto accettato!\nDai la caccia alla SQUADRA ${players[target].team}. Guarda la mappa! `, "HUNTING", true);
+                                    logEvent(`🎯 CACCIA ALLA SQUADRA avviata contro la ${players[target].team}.`);
+                                });
+                            }
+                        });
+                    }
+                } else tacticalAlert("Base sbloccata.", "INFO", true);
+            });
         } 
         else if (code.startsWith('C') || code.startsWith('E')) {
             if (globalSettings.exfil_config && globalSettings.exfil_config.enabled) {
                 let isValidExfil = currentExfilPoints.some(ex => (ex.id === code) || (ex.label && ex.label.includes(code)));
-                if (!isValidExfil && globalSettings.exfil_config.position === 'random') return alert(`Il punto ${code} non è un'estrazione attiva in questa partita!`);
-                if(exfilTimerEnd) return alert("Hai già chiamato un elicottero!");
+                if (!isValidExfil && globalSettings.exfil_config.position === 'random') return tacticalAlert(`Il punto ${code} non è un'estrazione attiva in questa partita!`);
+                if(exfilTimerEnd) return tacticalAlert("Hai già chiamato un elicottero!");
                 let waitMins = globalSettings.exfil_config.waitTime || 0;
-                if(waitMins > 0) { exfilTimerEnd = Date.now() + (waitMins * 60000); alert(`Elicottero in arrivo a ${code}! Difendi l'area per ${waitMins} minuti.`); update(push(ref(db, 'dmz_pings')), { team: myTeam, lat: myMarker.getLatLng().lat, lng: myMarker.getLatLng().lng, sender: "ELICOTTERO CHIAMATO", timestamp: Date.now() }); logEvent(`🚁 ELICOTTERO richiesto al punto ${code}.`); } else { doExfil(); }
-            } else alert("Elicottero non disponibile.");
+                if(waitMins > 0) { exfilTimerEnd = Date.now() + (waitMins * 60000); tacticalAlert(`Elicottero in arrivo a ${code}!\nDifendi l'area per ${waitMins} minuti.`, "EXFIL", true); update(push(ref(db, 'dmz_pings')), { team: myTeam, lat: myMarker.getLatLng().lat, lng: myMarker.getLatLng().lng, sender: "ELICOTTERO CHIAMATO", timestamp: Date.now() }); logEvent(`🚁 ELICOTTERO richiesto al punto ${code}.`); } else { doExfil(); }
+            } else tacticalAlert("Elicottero non disponibile.");
         } 
         else if (code.startsWith('D')) {
             window.openShop();
         }
         else if (code.startsWith('OP_')) {
-            if (code === myId) return alert("Non puoi interagire con te stesso!");
+            if (code === myId) return tacticalAlert("Non puoi interagire con te stesso!");
             get(ref(db, 'dmz_players/' + code)).then((snap) => {
-                let target = snap.val(); if (!target) return alert("Operatore non trovato.");
+                let target = snap.val(); if (!target) return tacticalAlert("Operatore non trovato.");
                 if (target.status === 'down') {
                     if (target.team === myTeam) {
                         let curesLeft = target.cures_left !== undefined ? target.cures_left : (globalSettings.medic_config ? globalSettings.medic_config.maxCures : 2);
-                        if (curesLeft <= 0) return alert("Operatore ha esaurito le cure rapide. Deve essere Eliminato per la rianimazione.");
+                        if (curesLeft <= 0) return tacticalAlert("Operatore ha esaurito le cure rapide. Deve essere Eliminato per la rianimazione.");
                         document.getElementById('revive-overlay').style.display = 'flex'; let timeLeft = 10; document.getElementById('revive-timer').innerText = timeLeft;
-                        window.reviveInterval = setInterval(() => { timeLeft--; document.getElementById('revive-timer').innerText = timeLeft; if (timeLeft <= 0) { clearInterval(window.reviveInterval); document.getElementById('revive-overlay').style.display = 'none'; update(ref(db, 'dmz_players/' + code), { status: 'active', cures_left: curesLeft - 1 }); alert("Compagno curato!"); } }, 1000);
-                    } else alert("Nemico in dissanguamento! Non puoi derubarlo ora. Finiscilo prima.");
+                        window.reviveInterval = setInterval(() => { timeLeft--; document.getElementById('revive-timer').innerText = timeLeft; if (timeLeft <= 0) { clearInterval(window.reviveInterval); document.getElementById('revive-overlay').style.display = 'none'; update(ref(db, 'dmz_players/' + code), { status: 'active', cures_left: curesLeft - 1 }); tacticalAlert("Compagno curato!", "MEDIC", true); } }, 1000);
+                    } else tacticalAlert("Nemico in dissanguamento! Non puoi derubarlo ora. Finiscilo prima.");
                 } else if (target.status === 'dead') {
                     actionTargetCode = code; actionTargetData = target; document.getElementById('pam-desc').innerText = `Operatore: ${target.name}\nSquadra: ${target.team}`; document.getElementById('player-action-modal').style.display = 'flex';
-                } else alert("L'operatore è ancora in combattimento!");
+                } else tacticalAlert("L'operatore è ancora in combattimento!");
             });
-        } else alert("Codice errato.");
+        } else tacticalAlert("Codice errato.");
     };
 
     function doExfil() {
-        let contractReward = 0; let hI = myBackpack.findIndex(i => i.name === "DATI SEGRETI"); if (hI > -1 && myContract && myContract.type === 'INTEL') { contractReward += 8000; alert("CONTRATTO INTEL COMPLETATO! +$8000"); myContract = null; }
-        let hC = myBackpack.findIndex(i => i.name === "CARICO PESANTE"); if (hC > -1 && myContract && myContract.type === 'CARGO') { contractReward += 15000; alert("CONTRATTO CARGO COMPLETATO! +$15000"); myContract = null; myBackpack = myBackpack.filter(i => i.name !== "CARICO PESANTE"); }
-        let hN = myBackpack.findIndex(i => i.name === "BARRE DI URANIO"); if (hN > -1 && myContract && myContract.type === 'NUKE') { contractReward += 20000; alert("MATERIALE NUCLEARE ESTRATTO! +$20000"); myContract = null; }
+        let contractReward = 0; let hI = myBackpack.findIndex(i => i.name === "DATI SEGRETI"); if (hI > -1 && myContract && myContract.type === 'INTEL') { contractReward += 8000; tacticalAlert("CONTRATTO INTEL COMPLETATO!\n+$8000", "REWARD", true); myContract = null; }
+        let hC = myBackpack.findIndex(i => i.name === "CARICO PESANTE"); if (hC > -1 && myContract && myContract.type === 'CARGO') { contractReward += 15000; tacticalAlert("CONTRATTO CARGO COMPLETATO!\n+$15000", "REWARD", true); myContract = null; myBackpack = myBackpack.filter(i => i.name !== "CARICO PESANTE"); }
+        let hN = myBackpack.findIndex(i => i.name === "BARRE DI URANIO"); if (hN > -1 && myContract && myContract.type === 'NUKE') { contractReward += 20000; tacticalAlert("MATERIALE NUCLEARE ESTRATTO!\n+$20000", "REWARD", true); myContract = null; }
         let totalValue = contractReward; myBackpack.forEach(i => totalValue += (i.value||0)); myCash += totalValue; 
         
         if (globalSettings && globalSettings.backpack_active === false) {
-             alert(`ESTRAZIONE COMPLETATA!`); document.getElementById('obj-status').innerText = `✅ ESTRATTO`; document.getElementById('obj-status').style.color = "#0f0"; setStatus('exfil'); logEvent(`✅ SQUADRA ${myTeam} è stata esfiltrata.`);
+             tacticalAlert(`ESTRAZIONE COMPLETATA!`, "EXFIL", true); document.getElementById('obj-status').innerText = `✅ ESTRATTO`; document.getElementById('obj-status').style.color = "#0f0"; setStatus('exfil'); logEvent(`✅ SQUADRA ${myTeam} è stata esfiltrata.`);
              return;
         }
 
@@ -557,19 +625,19 @@
             let stash = snap.val() || { cash: 0, items: [] }; stash.cash += myCash; if(!stash.items) stash.items = []; stash.items = stash.items.concat(myBackpack);
             update(ref(db, 'dmz_stash/' + safeName), stash).then(() => {
                 myCash = 0; myBackpack = []; updateEconomyHUD();
-                alert(`ESTRAZIONE COMPLETATA!\nGuadagno Raid: $${totalValue}\nTutto l'equipaggiamento è stato salvato nel tuo Magazzino.`); document.getElementById('obj-status').innerText = `✅ ESTRATTO`; document.getElementById('obj-status').style.color = "#0f0"; setStatus('exfil'); logEvent(`✅ SQUADRA ${myTeam} è stata esfiltrata.`);
+                tacticalAlert(`ESTRAZIONE COMPLETATA!\nGuadagno Raid: $${totalValue}\nTutto l'equipaggiamento è stato salvato nel tuo Magazzino.`, "SUCCESS", true); document.getElementById('obj-status').innerText = `✅ ESTRATTO`; document.getElementById('obj-status').style.color = "#0f0"; setStatus('exfil'); logEvent(`✅ SQUADRA ${myTeam} è stata esfiltrata.`);
             });
-        }).catch(err => { alert("Errore di salvataggio Stash: " + err); });
+        }).catch(err => { tacticalAlert("Errore di salvataggio Stash: " + err); });
     }
 
     window.deploy = function() {
         try {
-            let n = document.getElementById('p-name').value.trim().toUpperCase(); if(!n) return alert("Inserisci il Nome Operatore!"); 
+            let n = document.getElementById('p-name').value.trim().toUpperCase(); if(!n) return tacticalAlert("Inserisci il Nome Operatore!"); 
             let reqTeam = document.getElementById('p-team').value; let maxP = globalSettings.team_config ? globalSettings.team_config.maxPlayers : 4;
 
             get(ref(db, 'dmz_players')).then((snap) => {
                 let players = snap.val() || {}; let count = 0; Object.keys(players).forEach(k => { if(players[k].team === reqTeam && players[k].status !== 'exfil') count++; });
-                if(count >= maxP) return alert(`ERRORE: La squadra ${reqTeam} è al completo (Max ${maxP}).`);
+                if(count >= maxP) return tacticalAlert(`ERRORE: La squadra ${reqTeam} è al completo (Max ${maxP}).`);
                 
                 myName = n; myTeam = reqTeam; let safeName = myName.replace(/[^A-Z0-9]/g, ''); myId = "OP_" + safeName; 
 
@@ -586,25 +654,20 @@
                 
                 isDeployed = true; document.getElementById('team-name-hud').innerText = myTeam;
                 
-                update(ref(db, 'dmz_players/' + myId), { 
-                    name: myName, team: myTeam, status: 'active', cash: myCash, backpack: myBackpack, 
-                    cures_left: maxC, revives_left: maxR, lastUpdate: Date.now(),
-                    lat: activeFieldCenter[0], lng: activeFieldCenter[1] 
-                });
-                
+                update(ref(db, 'dmz_players/' + myId), { name: myName, team: myTeam, status: 'active', cash: myCash, backpack: myBackpack, cures_left: maxC, revives_left: maxR, lastUpdate: Date.now(), lat: activeFieldCenter[0], lng: activeFieldCenter[1] });
                 initMap(); startGPS(); setupNetworking(); logEvent(`🪂 ${myName} (Sq. ${myTeam}) schierato nell'AO.`);
-            }).catch(err => { alert("Errore di connessione a Firebase: " + err.message); });
-        } catch (error) { alert("ERRORE DI SISTEMA INTERNO: " + error.message); }
+            }).catch(err => { tacticalAlert("Errore di connessione a Firebase: " + err.message); });
+        } catch (error) { tacticalAlert("ERRORE DI SISTEMA INTERNO: " + error.message); }
     };
 
     window.manualSetStatus = function(newStatus) {
-        if (myStatus === 'dead') return alert("Sei eliminato. Non puoi cambiare stato da solo.");
-        if (myStatus === 'down' && newStatus === 'active') return alert("Sei ferito e in dissanguamento! Curati o attendi un compagno.");
+        if (myStatus === 'dead') return tacticalAlert("Sei eliminato. Non puoi cambiare stato da solo.");
+        if (myStatus === 'down' && newStatus === 'active') return tacticalAlert("Sei ferito e in dissanguamento! Curati o attendi un compagno.");
         setStatus(newStatus);
     };
 
     window.setStatus = function(newStatus, btnElement) {
-        if (myStatus === 'down' && newStatus === 'dead') alert("Eliminato. Attendi alleato/nemico per rianimazione.");
+        if (myStatus === 'down' && newStatus === 'dead') tacticalAlert("Eliminato. Attendi alleato/nemico per rianimazione.");
         myStatus = newStatus; update(ref(db, 'dmz_players/' + myId), { status: myStatus }); document.querySelectorAll('.btn-status').forEach(btn => { btn.style.borderColor = "#555"; btn.style.color = "#fff"; });
         if(!btnElement) btnElement = document.getElementById('btn-status-' + newStatus); 
         if(btnElement) { btnElement.style.borderColor = (newStatus==='active')?"#0f0":(newStatus==='down')?"#ffa500":"#aaa"; btnElement.style.color = btnElement.style.borderColor; }
@@ -647,7 +710,7 @@
             
             if (myContract && myContract.type === 'HUNT' && myContract.targetId === k) {
                 huntTargetFound = true;
-                if (p.status !== 'active') { alert("BERSAGLIO TAGLIA ELIMINATO! +$10000"); myCash += 10000; updateEconomyHUD(); myContract = null; if(window.huntCircle) { map.removeLayer(window.huntCircle); window.huntCircle = null; } } 
+                if (p.status !== 'active') { tacticalAlert("BERSAGLIO TAGLIA ELIMINATO! +$10000", "REWARD", true); myCash += 10000; updateEconomyHUD(); myContract = null; if(window.huntCircle) { map.removeLayer(window.huntCircle); window.huntCircle = null; } } 
                 else { if (!window.huntCircle) window.huntCircle = L.circle([p.lat, p.lng], {color: '#f00', fillOpacity: 0.2, radius: 80, dashArray: '10,10'}).addTo(map); else window.huntCircle.setLatLng([p.lat, p.lng]); }
             }
 
@@ -661,8 +724,8 @@
         });
 
         if (myContract && myContract.type === 'HUNT') {
-            if (!huntTargetFound) { alert("Bersaglio disconnesso/estratto."); myContract = null; if(window.huntCircle) { map.removeLayer(window.huntCircle); window.huntCircle = null; } }
-            else if (Date.now() > myContract.endTime) { alert("Tempo scaduto per la taglia. Contratto fallito."); myContract = null; if(window.huntCircle) { map.removeLayer(window.huntCircle); window.huntCircle = null; } }
+            if (!huntTargetFound) { tacticalAlert("Bersaglio disconnesso o estratto.", "TAGLIA PERSA"); myContract = null; if(window.huntCircle) { map.removeLayer(window.huntCircle); window.huntCircle = null; } }
+            else if (Date.now() > myContract.endTime) { tacticalAlert("Tempo scaduto per la taglia. Contratto fallito.", "TAGLIA PERSA"); myContract = null; if(window.huntCircle) { map.removeLayer(window.huntCircle); window.huntCircle = null; } }
         }
     }
 
@@ -691,7 +754,7 @@
             if(isTargetingAirstrike) {
                 isTargetingAirstrike = false; document.getElementById('targeting-overlay').style.display = 'none'; document.getElementById('map').style.cursor = ''; myBackpack.splice(window.airstrikeIdxPending, 1); updateEconomyHUD();
                 update(ref(db, `dmz_streaks/airstrikes/STRK_${Math.floor(Math.random()*9999)}`), { lat: e.latlng.lat, lng: e.latlng.lng, timestamp: Date.now(), team: myTeam, sender: myName });
-                alert("Attacco aereo in arrivo! Impatto tra 15 secondi."); logEvent(`✈️ ATTACCO AEREO sganciato dalla Sq. ${myTeam}.`);
+                tacticalAlert("Attacco aereo in arrivo! Impatto tra 15 secondi.", "AIRSTRIKE", true); logEvent(`✈️ ATTACCO AEREO sganciato dalla Sq. ${myTeam}.`);
             }
         });
     }
@@ -712,14 +775,13 @@
         }, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
     }
 
-    // MAIN GAME LOOP (Gestisce il nuovo Gas Dinamico)
     setInterval(() => {
         if(!isDeployed || !map || myStatus === 'exfil') return; let now = Date.now();
         
         renderMarkers();
 
         if (exfilTimerEnd) { if (myStatus !== 'active') { exfilTimerEnd = null; } else if (Math.ceil((exfilTimerEnd - now) / 1000) <= 0) { exfilTimerEnd = null; doExfil(); } }
-        if (myContract && myContract.type === 'DESTROY' && myContract.state === 'ARMED') { if (myStatus !== 'active') { myContract = null; } else if (Math.ceil((myContract.endTime - now) / 1000) <= 0) { alert("BOOM! Scorte distrutte!\n+$10000"); myCash += 10000; updateEconomyHUD(); myContract = null; logEvent(`💥 Scorte distrutte (Contratto completato).`); } }
+        if (myContract && myContract.type === 'DESTROY' && myContract.state === 'ARMED') { if (myStatus !== 'active') { myContract = null; } else if (Math.ceil((myContract.endTime - now) / 1000) <= 0) { tacticalAlert("BOOM! Scorte distrutte!\n+$10000", "SUCCESS", true); myCash += 10000; updateEconomyHUD(); myContract = null; logEvent(`💥 Scorte distrutte.`); } }
 
         if (myContract && (myContract.type === 'INTEL' || myContract.type === 'NUKE') && myContract.state === 'FETCH') {
             if (!window.contractCircle) { window.contractCircle = L.circle([myContract.targetLat, myContract.targetLng], {color: '#ff0', fillColor: '#ff0', fillOpacity: 0.2, radius: 50, dashArray: '10, 10'}).addTo(map); }
@@ -727,80 +789,50 @@
 
         let inGas = false; let gasRemain = 0;
         
-        // --- NUOVO MOTORE GAS DINAMICO ---
         if(globalSettings.gas_config && globalSettings.gas_config.enabled) {
             let conf = globalSettings.gas_config; 
-            
-            // 1. Determina il Centro
             let centerLL = L.latLng(activeFieldCenter[0], activeFieldCenter[1]);
             if(conf.centerBase && conf.centerBase !== 'FIELD') {
                 let baseMatch = masterBasesDB.find(b => b.id === conf.centerBase);
                 if(baseMatch) centerLL = L.latLng(baseMatch.lat, baseMatch.lng);
             }
             
-            // 2. Calcola Raggio Corrente usando la formula di Interpolazione
             let radii = (conf.radii && conf.radii.length > 0) ? conf.radii : [800, 400, 200, 50];
-            let speedMs = (conf.speed || 1) / 1000; // metri al millisecondo
-            let intervalMs = (conf.interval || 10) * 60000; // attesa tra fasi in millisecondi
+            let speedMs = (conf.speed || 1) / 1000; 
+            let intervalMs = (conf.interval || 10) * 60000; 
             let dt = now - conf.startTime;
 
             let currentRadius = radii[0];
             let phaseTime = 0;
 
             for (let i = 0; i < radii.length - 1; i++) {
-                let rStart = radii[i]; 
-                let rEnd = radii[i+1];
-                
-                // Fase di Pausa
+                let rStart = radii[i]; let rEnd = radii[i+1];
                 phaseTime += intervalMs;
-                if (dt < phaseTime) { 
-                    currentRadius = rStart; 
-                    break; 
-                }
-                
-                // Fase di Restringimento in corso
-                let shrinkDist = rStart - rEnd; 
-                let shrinkDur = shrinkDist / speedMs;
+                if (dt < phaseTime) { currentRadius = rStart; break; }
+                let shrinkDist = rStart - rEnd; let shrinkDur = shrinkDist / speedMs;
                 phaseTime += shrinkDur;
-                
-                if (dt < phaseTime) { 
-                    let timeInShrink = dt - (phaseTime - shrinkDur); 
-                    currentRadius = rStart - (timeInShrink * speedMs); 
-                    break; 
-                }
-                
-                // Se è passato, si imposta al raggio finale della fase
+                if (dt < phaseTime) { let timeInShrink = dt - (phaseTime - shrinkDur); currentRadius = rStart - (timeInShrink * speedMs); break; }
                 currentRadius = rEnd;
             }
-            if(currentRadius < 5) currentRadius = 5; // Sicurezza per evitare raggio negativo
+            if(currentRadius < 5) currentRadius = 5; 
 
-            // 3. Disegna il cerchio
-            if(!window.safeZoneCircle) { 
-                window.safeZoneCircle = L.circle(centerLL, {color:'#f0f', weight:2, fillOpacity:0.05, dashArray:'5,5'}).addTo(map); 
-            } else { 
-                window.safeZoneCircle.setLatLng(centerLL); 
-                window.safeZoneCircle.setRadius(currentRadius); 
-            }
+            if(!window.safeZoneCircle) { window.safeZoneCircle = L.circle(centerLL, {color:'#f0f', weight:2, fillOpacity:0.05, dashArray:'5,5'}).addTo(map); } else { window.safeZoneCircle.setLatLng(centerLL); window.safeZoneCircle.setRadius(currentRadius); }
             
-            // 4. Controlla Danni
             if(myMarker) {
                 inGas = centerLL.distanceTo(myMarker.getLatLng()) > currentRadius;
                 document.getElementById('gas-overlay').style.display = inGas ? 'block' : 'none';
                 if (inGas && conf.lethal && myStatus === 'active') {
                     let maxTime = conf.survivalTime; if(myBackpack.some(i => i.name.includes("AVANZATA"))) maxTime += 120; else if(myBackpack.some(i => i.name.includes("COMPLETA"))) maxTime += 60; else if(myBackpack.some(i => i.name.includes("SEMPLICE"))) maxTime += 30;
                     window.gasExposure = (window.gasExposure || 0) + 1; gasRemain = maxTime - window.gasExposure;
-                    if (gasRemain <= 0) { alert("Filtri esauriti. Sei a terra!"); setStatus('down'); }
+                    if (gasRemain <= 0) { tacticalAlert("Filtri esauriti. Sei a terra!"); setStatus('down'); }
                 } else if (!inGas) { window.gasExposure = 0; }
                 if (window.lastGasStatus !== inGas) { window.lastGasStatus = inGas; update(ref(db, 'dmz_players/' + myId), { in_gas: inGas }); }
             }
-        } else { 
-            document.getElementById('gas-overlay').style.display = 'none'; 
-            if(window.safeZoneCircle) { map.removeLayer(window.safeZoneCircle); window.safeZoneCircle = null; } 
-        }
+        } else { document.getElementById('gas-overlay').style.display = 'none'; if(window.safeZoneCircle) { map.removeLayer(window.safeZoneCircle); window.safeZoneCircle = null; } }
 
         if (myStatus === 'down' && window.bleedoutEndTime) { if (Math.ceil((window.bleedoutEndTime - now) / 1000) <= 0) { window.bleedoutEndTime = null; setStatus('dead'); } }
 
-        if(activeStreaks.airstrikes && myMarker && myStatus === 'active') { Object.keys(activeStreaks.airstrikes).forEach(k => { let s = activeStreaks.airstrikes[k]; let age = now - s.timestamp; if (age > 15000 && age < 17000 && s.team !== myTeam) { if (myMarker.getLatLng().distanceTo([s.lat, s.lng]) <= 20) { setStatus('down'); alert("⚠️ COLPITO DA ATTACCO AEREO! ⚠️"); } } }); }
+        if(activeStreaks.airstrikes && myMarker && myStatus === 'active') { Object.keys(activeStreaks.airstrikes).forEach(k => { let s = activeStreaks.airstrikes[k]; let age = now - s.timestamp; if (age > 15000 && age < 17000 && s.team !== myTeam) { if (myMarker.getLatLng().distanceTo([s.lat, s.lng]) <= 20) { setStatus('down'); tacticalAlert("COLPITO DA ATTACCO AEREO NEMICO!"); } } }); }
         let cuavOn = false, empOn = false;
         if(activeStreaks.cuav && activeStreaks.cuav.endTime > now && activeStreaks.cuav.team !== myTeam) cuavOn = true;
         if(activeStreaks.emp && activeStreaks.emp.endTime > now && activeStreaks.emp.team !== myTeam) empOn = true;
@@ -833,8 +865,8 @@
                 let data = snap.val();
                 if (data.cash !== undefined && data.cash !== myCash) { myCash = data.cash; document.getElementById('txt-cash').innerText = `💵 $${myCash}`; }
                 if (data.backpack !== undefined) { myBackpack = data.backpack; document.getElementById('txt-bp').innerText = `🎒 ${myBackpack.length}/5`; } else if (myBackpack.length > 0) { myBackpack = []; document.getElementById('txt-bp').innerText = `🎒 0/5`; }
-                if (data.status === 'active' && myStatus !== 'active') { myStatus = 'active'; document.querySelectorAll('.btn-status').forEach(btn => { btn.style.borderColor = "#555"; btn.style.color = "#fff"; }); let btnElement = document.getElementById('btn-status-active'); if(btnElement) { btnElement.style.borderColor = "#0f0"; btnElement.style.color = "#0f0"; } if (bleedoutTimer) { clearTimeout(bleedoutTimer); bleedoutTimer = null; window.bleedoutEndTime = null; } alert("Sei stato curato/rianimato da un Operatore!"); }
-                if (data.team && data.team !== myTeam) { myTeam = data.team; document.getElementById('team-name-hud').innerText = myTeam; alert("SEI STATO ASSIMILATO!\nOra fai parte della squadra " + myTeam); document.getElementById('p-team').value = myTeam; }
+                if (data.status === 'active' && myStatus !== 'active') { myStatus = 'active'; document.querySelectorAll('.btn-status').forEach(btn => { btn.style.borderColor = "#555"; btn.style.color = "#fff"; }); let btnElement = document.getElementById('btn-status-active'); if(btnElement) { btnElement.style.borderColor = "#0f0"; btnElement.style.color = "#0f0"; } if (bleedoutTimer) { clearTimeout(bleedoutTimer); bleedoutTimer = null; window.bleedoutEndTime = null; } tacticalAlert("Sei stato curato/rianimato da un Operatore!", "RIANIMAZIONE", true); }
+                if (data.team && data.team !== myTeam) { myTeam = data.team; document.getElementById('team-name-hud').innerText = myTeam; tacticalAlert("SEI STATO ASSIMILATO!\nOra fai parte della squadra " + myTeam, "ASSIMILAZIONE", true); document.getElementById('p-team').value = myTeam; }
             }
         });
 
@@ -866,7 +898,6 @@
     }
     window.centerMap = function() { if(myMarker) map.setView(myMarker.getLatLng(), 18); };
 
-    // --- WAKE LOCK ANTI-STANDBY PER I GIOCATORI ---
     let wakeLock = null;
     async function keepScreenAwake() { try { if ('wakeLock' in navigator) { wakeLock = await navigator.wakeLock.request('screen'); console.log("Wake Lock attivo."); } } catch (err) { } }
     document.addEventListener('visibilitychange', () => { if (wakeLock !== null && document.visibilityState === 'visible') keepScreenAwake(); });
