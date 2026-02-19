@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DMZ">
 <meta name="theme-color" content="#000000">
-<title>DMZ: TACTICAL MAP v2.7</title>
+<title>DMZ: TACTICAL MAP v2.8</title>
 
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -15,7 +15,7 @@
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
 <style>
-    /* STILE GRAFICO INTEGRATO */
+    /* STILE GRAFICO INTEGRATO (ANTI-SCHERMATA BIANCA) */
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
     body { margin: 0; padding: 0; background: #000; font-family: 'Share Tech Mono', 'Courier New', monospace; overflow: hidden; color: #0f0; }
     .full-screen-ui { position: absolute; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle at center, #0a150a 0%, #000 100%); z-index: 2000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -45,13 +45,14 @@
     #team-banner { background: rgba(0,0,0,0.6); color: #fff; font-size: 10px; padding: 4px; text-align: center; border-bottom: 1px solid #555; }
     #hud-sub-top { display: flex; justify-content: space-between; padding: 10px; width: calc(100% - 20px); }
     .hud-box { background: rgba(0, 20, 0, 0.7); border: 1px solid #0f0; padding: 6px 12px; color: #0f0; font-size: 12px; text-shadow: 0 0 5px #0f0; backdrop-filter: blur(4px); clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); box-shadow: 0 0 5px rgba(0,255,0,0.2); }
-    .hud-economy { background: linear-gradient(135deg, rgba(0,40,0,0.9) 0%, rgba(0,15,0,0.9) 100%); cursor: pointer; pointer-events: auto; font-size: 14px; font-weight: bold; }
+    .hud-economy { background: linear-gradient(135deg, rgba(0,40,0,0.9) 0%, rgba(0,15,0,0.9) 100%); cursor: pointer; pointer-events: auto; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; }
     #combat-log { position: absolute; top: 120px; right: 10px; width: 65%; max-width: 280px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; z-index: 1000; pointer-events: none; }
     .log-entry { background: rgba(0, 15, 0, 0.85); border-right: 3px solid #0f0; color: #fff; padding: 6px 10px; font-size: 11px; font-family: 'Share Tech Mono', monospace; text-shadow: 0 0 3px #000; clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px); animation: slideIn 0.4s ease-out; backdrop-filter: blur(2px); text-align: right; }
     .log-entry span.time { color: #0ff; margin-right: 5px; }
     @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
     #hud-status { position: absolute; top: 130px; left: 10px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
     .btn-status { background: rgba(0,10,0,0.8); border: 1px solid #555; color: #fff; padding: 10px; font-family: 'Share Tech Mono', monospace; font-size: 12px; cursor: pointer; text-align: left; transition: 0.2s; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); backdrop-filter: blur(4px); pointer-events: auto; }
+    .btn-status:active { transform: scale(0.95); }
     #hud-bottom { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 20px; pointer-events: auto; }
     .action-btn { background: rgba(0,20,0,0.85); border: 2px solid #0f0; color: #0f0; width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 0 15px rgba(0,255,0,0.3); transition: 0.2s; clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); }
     .action-btn:active { background: #0f0; color: #000; transform: scale(0.9); box-shadow: 0 0 25px #0f0; }
@@ -63,12 +64,14 @@
     #qr-reader-container { width: 100%; max-width: 350px; min-height: 250px; background: #000; border: 2px solid #0ff; margin-bottom:15px; display:flex; justify-content:center; align-items:center; }
     #qr-reader { width: 100%; }
     .shop-item { display:flex; justify-content:space-between; align-items:center; background:rgba(0,30,0,0.6); border:1px solid #0aa; padding:12px; margin-bottom:8px; width:90%; max-width:350px; color:#fff; font-size:14px; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
-    .shop-btn { background:rgba(0,80,0,0.8); border:1px solid #0f0; color:#0f0; padding:6px 12px; cursor:pointer; font-family: 'Share Tech Mono', monospace; clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px); }
+    .shop-btn { background:rgba(0,80,0,0.8); border:1px solid #0f0; color:#0f0; padding:6px 12px; cursor:pointer; font-family: 'Share Tech Mono', monospace; clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px); transition: 0.2s; }
+    .shop-btn:active { background: #0f0; color: #000; }
     .bp-item { display:flex; flex-direction:column; background:rgba(0,20,0,0.8); border:1px dashed #0f0; padding:12px; margin-bottom:8px; width:90%; max-width:350px; color:#fff; font-size:14px; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
     .locker-panel { flex: 1; border: 1px solid #0aa; background: rgba(0,15,15,0.8); display: flex; flex-direction: column; overflow-y: auto; padding: 8px; height: 350px; clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); }
     .locker-panel h3 { margin: 0 0 10px 0; color: #0ff; font-size: 14px; text-align: center; border-bottom: 1px solid #0aa; padding-bottom: 5px; }
     .locker-item { background: rgba(0,0,0,0.6); border: 1px solid #0aa; padding: 10px; margin-bottom: 5px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; color: #ddd; clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px); }
-    .locker-btn { background: rgba(0,80,80,0.8); border: 1px solid #0ff; color: #0ff; padding: 5px 10px; cursor: pointer; font-family: 'Share Tech Mono', monospace; font-size: 10px; }
+    .locker-btn { background: rgba(0,80,80,0.8); border: 1px solid #0ff; color: #0ff; padding: 5px 10px; cursor: pointer; font-family: 'Share Tech Mono', monospace; font-size: 10px; clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px); transition: 0.2s;}
+    .locker-btn:active { background: #0ff; color: #000; }
     .teammate-label { background: rgba(0,0,0,0.7); color: #fff; font-family: sans-serif; font-weight: bold; border-radius: 3px; padding: 2px 4px; font-size: 10px; margin-top: -38px; text-align: center; width: 100px; margin-left: -42px; border: 1px solid #555; pointer-events: none; }
     .ping-icon { background: rgba(255, 0, 0, 0.8); border: 2px solid #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; box-shadow: 0 0 15px #f00; animation: ping-pulse 1s infinite; }
     @keyframes ping-pulse { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }
@@ -79,7 +82,7 @@
 
 <div id="login-screen" class="full-screen-ui">
     <h1>DMZ: DEPLOY</h1>
-    <div class="version-tag">PLAYER TERMINAL v2.7</div>
+    <div class="version-tag">PLAYER TERMINAL v2.8</div>
     
     <div id="status-label" class="status-label">CONNESSIONE...</div>
     
@@ -94,12 +97,12 @@
         <option value="YANKEE">SQUADRA YANKEE</option><option value="ZULU">SQUADRA ZULU</option>
     </select>
     
-    <div id="start-gear-selection" style="display:none; width:80%; max-width:300px; margin-top:15px; border:1px solid #0cf; padding:15px; background:rgba(0, 20, 30, 0.8);">
+    <div id="start-gear-selection" style="display:none; width:80%; max-width:300px; margin-top:15px; border:1px solid #0cf; padding:15px; background:rgba(0, 20, 30, 0.8); clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);">
         <div style="color:#0cf; font-size:14px; font-weight:bold; margin-bottom:15px; text-align:center;">SELEZIONA EQUIP.</div>
         <div id="start-gear-options" style="display:flex; flex-direction:column; gap:8px; max-height:120px; overflow-y:auto;"></div>
     </div>
 
-    <button class="btn-deploy" style="background:linear-gradient(135deg, #003344 0%, #001122 100%); border-color:#0cf; box-shadow: 0 0 10px rgba(0,255,255,0.3); margin-top:10px; color:#0cf;" onclick="openStash()">🏦 ACCEDI AL MAGAZZINO</button>
+    <button id="btn-stash" class="btn-deploy" style="background:linear-gradient(135deg, #003344 0%, #001122 100%); border-color:#0cf; box-shadow: 0 0 10px rgba(0,255,255,0.3); margin-top:10px; color:#0cf;" onclick="openStash()">🏦 ACCEDI AL MAGAZZINO</button>
     <div id="deploy-help" style="color:#ff0; font-size:12px; margin-top:15px;">Attendi l'avvio della partita dal Comando.</div>
     <button id="btn-deploy" class="btn-deploy" onclick="deploy()" style="display:none;">DISPIEGAMENTO</button>
 </div>
@@ -165,7 +168,7 @@
 <div id="gas-overlay"></div>
 <div id="cuav-overlay"></div>
 <div id="crosshair">✛</div>
-<div id="targeting-overlay" style="display:none; z-index:2000; position:absolute; top:120px; left:50%; transform:translateX(-50%); background:rgba(255,0,0,0.85); color:#fff; padding:15px; border:1px solid #f00;">⬇ CLICCA SULLA MAPPA PER LANCIARE L'ATTACCO AEREO ⬇</div>
+<div id="targeting-overlay">⬇ CLICCA SULLA MAPPA PER LANCIARE L'ATTACCO AEREO ⬇</div>
 
 <div id="hud-top-container" style="display:none;">
     <div id="obj-banner">OBIETTIVO: SOPRAVVIVENZA</div>
@@ -173,7 +176,7 @@
     <div id="hud-sub-top">
         <div class="hud-box" id="gps-status" style="color:#0ff; border-color:#0ff;">GPS: RICERCA...</div>
         <div id="hud-economy-box" class="hud-box hud-economy" style="display:none;" onclick="openBackpack()">
-            <span id="txt-cash">💵 $0</span>&nbsp;|&nbsp;<span id="txt-bp">🎒 0/5</span>
+            <span id="txt-cash">💵 $0</span><span id="txt-sep">&nbsp;|&nbsp;</span><span id="txt-bp">🎒 0/5</span>
         </div>
     </div>
 </div>
@@ -235,17 +238,42 @@
         if (globalSettings.status === 'running') {
             if(sl) sl.innerText = "🟢 PARTITA IN CORSO"; if(sl) sl.className = "status-label running"; if(bd) bd.style.display = "block";
             let sgs = document.getElementById('start-gear-selection'); let sgo = document.getElementById('start-gear-options');
+            
+            // GESTIONE BLOCCHI IN FASE DI LOGIN
             if (!isDeployed && globalSettings.start_gear_config) {
-                let mode = globalSettings.start_gear_config.mode; let pool = globalSettings.start_gear_config.pool || []; let limit = globalSettings.start_gear_config.limit || 5;
-                if (mode === 'none') { if(sgs) sgs.style.display = 'none'; } 
-                else if (mode === 'fixed') { if(sgs) sgs.style.display = 'block'; if(sgo) sgo.innerHTML = pool.map(i => `<div style="color:#0cf; font-size:12px;">- ${i.name}</div>`).join(''); } 
-                else if (mode === 'choice') { if(sgs) sgs.style.display = 'block'; if(sgo) sgo.innerHTML = pool.map((i, idx) => `<label style="color:#0cf; font-size:12px; display:flex; align-items:center; gap:5px;"><input type="checkbox" class="start-gear-cb" value="${idx}" style="transform:scale(1.2);"> ${i.name}</label>`).join(''); }
-            } else { if(sgs) sgs.style.display = 'none'; }
+                if (globalSettings.backpack_active === false) {
+                    if(sgs) sgs.style.display = 'none';
+                    document.getElementById('btn-stash').style.display = 'none';
+                } else {
+                    document.getElementById('btn-stash').style.display = 'block';
+                    let mode = globalSettings.start_gear_config.mode; let pool = globalSettings.start_gear_config.pool || []; let limit = globalSettings.start_gear_config.limit || 5;
+                    if (mode === 'none') { if(sgs) sgs.style.display = 'none'; } 
+                    else if (mode === 'fixed') { if(sgs) sgs.style.display = 'block'; if(sgo) sgo.innerHTML = pool.map(i => `<div style="color:#0cf; font-size:12px;">- ${i.name}</div>`).join(''); } 
+                    else if (mode === 'choice') { if(sgs) sgs.style.display = 'block'; if(sgo) sgo.innerHTML = pool.map((i, idx) => `<label style="color:#0cf; font-size:12px; display:flex; align-items:center; gap:5px;"><input type="checkbox" class="start-gear-cb" value="${idx}" style="transform:scale(1.2);"> ${i.name}</label>`).join(''); }
+                }
+            } else if(!isDeployed) { if(sgs) sgs.style.display = 'none'; }
+
         } else {
             if(sl) sl.innerText = "🔴 IN ATTESA DEL MASTER"; if(sl) sl.className = "status-label"; if(bd) bd.style.display = "none"; let sgs = document.getElementById('start-gear-selection'); if(sgs) sgs.style.display = 'none';
             if (isDeployed) { alert("Partita Terminata!"); window.location.reload(); }
         }
-        if (isDeployed) { document.getElementById('hud-economy-box').style.display = globalSettings.economy_active ? 'flex' : 'none'; }
+        
+        // GESTIONE HUD DURANTE IL GIOCO
+        if (isDeployed) { 
+            let ecoBox = document.getElementById('hud-economy-box');
+            let txtCash = document.getElementById('txt-cash');
+            let txtBp = document.getElementById('txt-bp');
+            let txtSep = document.getElementById('txt-sep');
+
+            if (globalSettings.economy_active === false && globalSettings.backpack_active === false) {
+                ecoBox.style.display = 'none';
+            } else {
+                ecoBox.style.display = 'flex';
+                txtCash.style.display = (globalSettings.economy_active === false) ? 'none' : 'inline';
+                txtBp.style.display = (globalSettings.backpack_active === false) ? 'none' : 'inline';
+                txtSep.style.display = (globalSettings.economy_active !== false && globalSettings.backpack_active !== false) ? 'inline' : 'none';
+            }
+        }
     });
 
     onValue(ref(db, 'dmz_streaks'), (snap) => {
@@ -257,7 +285,7 @@
     });
 
     window.openStash = function() {
-        if(globalSettings && globalSettings.economy_active === false) return alert("Sistema Magazzino/Zaino disabilitato in questa partita.");
+        if(globalSettings && globalSettings.backpack_active === false) return alert("Sistema Magazzino/Zaino disabilitato in questa partita.");
         let n = document.getElementById('p-name').value.trim().toUpperCase(); if(!n) return alert("Inserisci il Nome Operatore per accedere al magazzino.");
         myName = n; let safeName = myName.replace(/[^A-Z0-9]/g, '');
         get(ref(db, 'dmz_stash/' + safeName)).then((snap) => {
@@ -296,7 +324,7 @@
         if(sCont.innerHTML === "") sCont.innerHTML = "<div style='color:#555; font-size:10px; text-align:center;'>Zaino vuoto o nessun oggetto di valore.</div>";
         document.getElementById('shop-modal').style.display = 'flex';
     };
-    window.buyItem = function(idx) { let item = globalSettings.shop_config.pool[idx]; if (myCash >= item.price) { if(myBackpack.length >= 5) return alert("Zaino Pieno!"); myCash -= item.price; let nIt = {...item}; if(nIt.name.includes("CHIAVE")) nIt.uses = 3; myBackpack.push(nIt); updateEconomyHUD(); window.openShop(); logEvent(`🛒 ${myName} ha acquistato ${item.name}.`); } else alert("Fondi insufficienti!"); };
+    window.buyItem = function(idx) { let item = globalSettings.shop_config.pool[idx]; if (myCash >= item.price) { if(globalSettings.backpack_active !== false && myBackpack.length >= 5) return alert("Zaino Pieno!"); myCash -= item.price; let nIt = {...item}; if(nIt.name.includes("CHIAVE")) nIt.uses = 3; if(globalSettings.backpack_active !== false) myBackpack.push(nIt); updateEconomyHUD(); window.openShop(); logEvent(`🛒 ${myName} ha acquistato ${item.name}.`); } else alert("Fondi insufficienti!"); };
     window.sellBackpackItem = function(idx, val) { myCash += val; myBackpack.splice(idx, 1); updateEconomyHUD(); window.openShop(); };
     window.closeShop = function() { document.getElementById('shop-modal').style.display = 'none'; };
 
@@ -310,7 +338,7 @@
 
     function renderLockerUI() {
         let lMoney = document.getElementById('locker-money-box');
-        if (currentLockerData.money > 0) { lMoney.innerHTML = `<span style="color:#8f8; font-weight:bold;">💵 $${currentLockerData.money}</span> <button class="locker-btn" style="float:right;" onclick="takeMoney()">PRELEVA</button>`; } else { lMoney.innerHTML = `<span style="color:#555;">💵 Nessun contante</span>`; }
+        if (currentLockerData.money > 0 && globalSettings.economy_active !== false) { lMoney.innerHTML = `<span style="color:#8f8; font-weight:bold;">💵 $${currentLockerData.money}</span> <button class="locker-btn" style="float:right;" onclick="takeMoney()">PRELEVA</button>`; } else { lMoney.innerHTML = `<span style="color:#555;">💵 Nessun contante</span>`; }
         let lItems = document.getElementById('locker-items-box'); lItems.innerHTML = "";
         if (!currentLockerData.items || currentLockerData.items.length === 0) { lItems.innerHTML = "<div style='color:#555; font-size:12px; padding:5px;'>Vuoto.</div>"; } else { currentLockerData.items.forEach((it, i) => { let v = it.value > 0 ? `$${it.value}` : "Cons."; lItems.innerHTML += `<div class="locker-item"><span>${it.name} <span style="color:#aaa;">(${v})</span></span><button class="locker-btn" onclick="takeItem(${i})">PRENDI</button></div>`; }); }
         let bpBox = document.getElementById('locker-backpack-box'); bpBox.innerHTML = "";
@@ -327,7 +355,7 @@
         let defaultRarePool = [ { name: "CHIAVE UNIVERSALE", chance: 30, value: 5000, enabled: true }, { name: "LINGOTTO D'ORO", chance: 30, value: 8000, enabled: true }, { name: "ATTACCO AEREO", chance: 20, value: 8000, enabled: true }, { name: "UAV DI DISTURBO", chance: 20, value: 2500, enabled: true } ];
         let pItems = isRare ? defaultRarePool : (globalSettings.lockers_config ? globalSettings.lockers_config.pool : []);
         
-        if (globalSettings.economy_active && pMoney && pMoney.length > 0) { let rM = Math.random() * 100, cM = 0; for(let m of pMoney) { cM += m.chance; if(rM <= cM){ money = m.amount; break; } } }
+        if (globalSettings.economy_active !== false && pMoney && pMoney.length > 0) { let rM = Math.random() * 100, cM = 0; for(let m of pMoney) { cM += m.chance; if(rM <= cM){ money = m.amount; break; } } }
         if (pItems && pItems.length > 0) { let rI = Math.random() * 100, cI = 0; for(let i of pItems) { cI += i.chance; if(rI <= cI){ if(i.name !== "VUOTO") { let newItem = { ...i }; if (newItem.name.includes("CHIAVE")) newItem.uses = 3; items.push(newItem); } break; } } }
         return { money, items };
     }
@@ -335,6 +363,7 @@
     window.updateEconomyHUD = function() { document.getElementById('txt-cash').innerText = `💵 $${myCash}`; document.getElementById('txt-bp').innerText = `🎒 ${myBackpack.length}/5`; let hasCargo = myBackpack.some(i => i.name === "CARICO PESANTE"); update(ref(db, 'dmz_players/' + myId), { cash: myCash, backpack: myBackpack, has_cargo: hasCargo }); };
     
     window.openBackpack = function() {
+        if(globalSettings && globalSettings.backpack_active === false) return; // Prevent opening if off
         const cont = document.getElementById('bp-items-container'); cont.innerHTML = "";
         if(myBackpack.length === 0) { cont.innerHTML = "<div style='color:#888; margin-top:20px;'>Lo zaino è vuoto.</div>"; } else {
             myBackpack.forEach((item, idx) => {
@@ -385,7 +414,7 @@
     window.executePlayerAction = function(action) {
         closePlayerAction();
         if (action === 'LOOT') {
-            if (globalSettings && globalSettings.economy_active === false) return alert("Sistema loot disabilitato in questa partita.");
+            if (globalSettings && globalSettings.backpack_active === false) return alert("Sistema loot disabilitato in questa partita.");
             if (myContract && myContract.type === 'HUNT' && myContract.targetId === actionTargetCode) { alert("BERSAGLIO TAGLIA ELIMINATO E DERUBATO! +$10000"); myCash += 10000; myContract = null; updateEconomyHUD(); document.getElementById('obj-status').innerText = `OBIETTIVO: SOPRAVVIVENZA`; document.getElementById('obj-status').style.color = "#0f0"; logEvent(`🎯 Taglia completata.`); }
             openLockerUI(actionTargetCode, {money: actionTargetData.cash || 0, items: actionTargetData.backpack || []}, 'PLAYER');
         } 
@@ -433,7 +462,7 @@
         let code = document.getElementById('manual-code-input').value.trim().toUpperCase(); if(!code) return; closeScanner();
         
         if (code.startsWith('A')) {
-            if (globalSettings && globalSettings.economy_active === false) return alert("Casse e Loot disabilitati in questa partita.");
+            if (globalSettings && globalSettings.backpack_active === false) return alert("Casse e Loot disabilitati in questa partita.");
             let isRare = globalSettings.keys_lockers ? true : false;
             if (isRare) { if (!consumeKey(code)) return; }
             
@@ -468,13 +497,13 @@
                             myContract = { type: randomContract, targetId: targetBase.id, targetLat: targetBase.lat, targetLng: targetBase.lng, state: randomContract==='DESTROY'?'GOTO':'FETCH' }; 
                             if(randomContract === 'NUKE') logEvent(`☢️ Sq. ${myTeam} cerca Materiale Nucleare.`); else logEvent(`📜 Sq. ${myTeam} avvia ${randomContract}.`); 
                         }
-                        else if (randomContract === 'CARGO') { if (globalSettings && globalSettings.economy_active === false) return alert("Contratto incompatibile con l'economia spenta."); if(myBackpack.length > 2) return alert("Servono 3 slot liberi!"); myBackpack.push({name: "CARICO PESANTE", value: 0}); myBackpack.push({name: "CARICO PESANTE", value: 0}); myBackpack.push({name: "CARICO PESANTE", value: 15000}); myContract = { type: 'CARGO', state: 'DELIVER' }; updateEconomyHUD(); logEvent(`📜 Sq. ${myTeam} trasporta CARICO PESANTE.`); }
+                        else if (randomContract === 'CARGO') { if (globalSettings && globalSettings.backpack_active === false) return alert("Contratto incompatibile con lo zaino spento."); if(myBackpack.length > 2) return alert("Servono 3 slot liberi!"); myBackpack.push({name: "CARICO PESANTE", value: 0}); myBackpack.push({name: "CARICO PESANTE", value: 0}); myBackpack.push({name: "CARICO PESANTE", value: 15000}); myContract = { type: 'CARGO', state: 'DELIVER' }; updateEconomyHUD(); logEvent(`📜 Sq. ${myTeam} trasporta CARICO PESANTE.`); }
                         else if (randomContract === 'HUNT') {
                             get(ref(db, 'dmz_players')).then((snap) => {
                                 let players = snap.val() || {}; let enemies = Object.keys(players).filter(k => players[k].team !== myTeam && players[k].status === 'active');
                                 if (enemies.length === 0) return alert("Nessun nemico vivo in campo.");
                                 let target = enemies[Math.floor(Math.random() * enemies.length)];
-                                myContract = { type: 'HUNT', targetId: target, state: 'HUNTING', endTime: Date.now() + (5 * 60000) }; alert(`Contratto accettato! Dai la caccia alla SQUADRA ${players[target].team}. Guarda la mappa!`);
+                                myContract = { type: 'HUNT', targetId: target, state: 'HUNTING', endTime: Date.now() + (5 * 60000) }; alert(`Contratto accettato! Dai la caccia alla SQUADRA ${players[target].team}. Guarda la mappa !`);
                                 logEvent(`🎯 CACCIA ALLA SQUADRA avviata contro la ${players[target].team}.`);
                             });
                         }
@@ -518,7 +547,7 @@
         let hN = myBackpack.findIndex(i => i.name === "BARRE DI URANIO"); if (hN > -1 && myContract && myContract.type === 'NUKE') { contractReward += 20000; alert("MATERIALE NUCLEARE ESTRATTO! +$20000"); myContract = null; }
         let totalValue = contractReward; myBackpack.forEach(i => totalValue += (i.value||0)); myCash += totalValue; 
         
-        if (globalSettings && globalSettings.economy_active === false) {
+        if (globalSettings && globalSettings.backpack_active === false) {
              alert(`ESTRAZIONE COMPLETATA!`); document.getElementById('obj-status').innerText = `✅ ESTRATTO`; document.getElementById('obj-status').style.color = "#0f0"; setStatus('exfil'); logEvent(`✅ SQUADRA ${myTeam} è stata esfiltrata.`);
              return;
         }
@@ -533,6 +562,7 @@
         }).catch(err => { alert("Errore di salvataggio Stash: " + err); });
     }
 
+    // FIX DEL CRASH "LAT" IN DEPLOY
     window.deploy = function() {
         try {
             let n = document.getElementById('p-name').value.trim().toUpperCase(); if(!n) return alert("Inserisci il Nome Operatore!"); 
@@ -555,10 +585,14 @@
                 
                 let sgs = document.getElementById('start-gear-selection'); if(sgs) sgs.style.display = 'none';
                 
-                isDeployed = true; document.getElementById('hud-economy-box').style.display = globalSettings.economy_active ? 'flex' : 'none'; updateEconomyHUD(); 
-                document.getElementById('team-name-hud').innerText = myTeam;
+                isDeployed = true; document.getElementById('team-name-hud').innerText = myTeam;
                 
-                update(ref(db, 'dmz_players/' + myId), { name: myName, team: myTeam, status: 'active', cash: myCash, backpack: myBackpack, cures_left: maxC, revives_left: maxR, lastUpdate: Date.now(), lat: activeFieldCenter[0], lng: activeFieldCenter[1] });
+                // ASSEGNAZIONE LAT/LNG INIZIALE PER PREVENIRE IL CRASH
+                update(ref(db, 'dmz_players/' + myId), { 
+                    name: myName, team: myTeam, status: 'active', cash: myCash, backpack: myBackpack, 
+                    cures_left: maxC, revives_left: maxR, lastUpdate: Date.now(),
+                    lat: activeFieldCenter[0], lng: activeFieldCenter[1] 
+                });
                 
                 initMap(); startGPS(); setupNetworking(); logEvent(`🪂 ${myName} (Sq. ${myTeam}) schierato nell'AO.`);
             }).catch(err => { alert("Errore di connessione a Firebase: " + err.message); });
