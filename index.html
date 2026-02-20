@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DMZ">
 <meta name="theme-color" content="#000000">
-<title>DMZ: TACTICAL MAP v3.5.1</title>
+<title>DMZ: TACTICAL MAP v4.0</title>
 
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -29,11 +29,14 @@
     .btn-deploy:active { background: #0f0; color: #000; box-shadow: 0 0 20px #0f0; }
     #map { height: 100vh; width: 100vw; z-index: 1; background: #111; position: absolute; top:0; left:0; }
     .rotated-east { transform: rotate(-90deg); transform-origin: center center; width: 100vh !important; height: 100vw !important; position: fixed !important; top: 50% !important; left: 50% !important; margin-top: -50vw !important; margin-left: -50vh !important; }
+    
     .base-marker-container { position:relative; width:30px; height:30px; display:flex; justify-content:center; align-items:center; }
     .base-circle { background:rgba(255,255,0,0.9); border:2px solid #000; border-radius:50%; width:20px; height:20px; display:flex; justify-content:center; align-items:center; color:#000; font-family:'Share Tech Mono', sans-serif; font-weight:bold; font-size:10px; box-shadow:0 0 8px #ff0; }
     .base-name { position:absolute; top:24px; width:120px; text-align:center; color:#ff0; font-size:10px; font-weight:bold; text-shadow:1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; letter-spacing:1px; white-space:nowrap; pointer-events: none; }
+    
     .exfil-circle { background:rgba(0,255,255,0.9); border:2px solid #000; border-radius:50%; width:24px; height:24px; display:flex; justify-content:center; align-items:center; font-size:12px; box-shadow:0 0 8px #0ff; }
     .exfil-name { position:absolute; top:28px; width:100px; text-align:center; color:#0ff; font-size:10px; font-weight:bold; text-shadow:1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000; pointer-events: none; }
+    
     #crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(0, 255, 0, 0.6); font-size: 30px; font-weight: bold; z-index: 1000; pointer-events: none; text-shadow: 0 0 5px #000; display: none; font-family: sans-serif; }
     #gas-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(200, 0, 255, 0.15); z-index: 999; display: none; pointer-events: none; box-shadow: inset 0 0 100px rgba(200,0,255,0.9); }
     #cuav-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(0, 50, 0, 0.1), rgba(0, 50, 0, 0.1) 2px, transparent 2px, transparent 4px); backdrop-filter: blur(8px) grayscale(100%); z-index: 999; display: none; pointer-events: none; }
@@ -54,6 +57,7 @@
     .log-entry { background: rgba(0, 15, 0, 0.85); border-right: 3px solid #0f0; color: #fff; padding: 6px 10px; font-size: 11px; font-family: 'Share Tech Mono', monospace; text-shadow: 0 0 3px #000; clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px); animation: slideIn 0.4s ease-out; backdrop-filter: blur(2px); text-align: right; }
     .log-entry span.time { color: #0ff; margin-right: 5px; }
     @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+    
     #hud-status { position: absolute; top: 140px; left: 10px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
     .btn-status { background: rgba(0,10,0,0.8); border: 1px solid #555; color: #fff; padding: 10px; font-family: 'Share Tech Mono', monospace; font-size: 12px; cursor: pointer; text-align: left; transition: 0.2s; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); backdrop-filter: blur(4px); pointer-events: auto; }
     .btn-status:active { transform: scale(0.95); }
@@ -78,10 +82,10 @@
     .locker-btn { background: rgba(0,80,80,0.8); border: 1px solid #0ff; color: #0ff; padding: 5px 10px; cursor: pointer; font-family: 'Share Tech Mono', monospace; font-size: 10px; clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px); transition: 0.2s;}
     .locker-btn:active { background: #0ff; color: #000; }
     .teammate-label { background: rgba(0,0,0,0.7); color: #fff; font-family: sans-serif; font-weight: bold; border-radius: 3px; padding: 2px 4px; font-size: 10px; margin-top: -38px; text-align: center; width: 100px; margin-left: -42px; border: 1px solid #555; pointer-events: none; }
+    
     .ping-icon { background: rgba(255, 0, 0, 0.8); border: 2px solid #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; box-shadow: 0 0 15px #f00; animation: ping-pulse 1s infinite; }
     @keyframes ping-pulse { 0% { transform: scale(0.8); opacity: 1; } 100% { transform: scale(1.8); opacity: 0; } }
-    #targeting-overlay { position: absolute; top: 120px; left: 50%; transform: translateX(-50%); background: rgba(255,0,0,0.85); color: white; padding: 15px 25px; border: 1px solid #f00; z-index: 2000; display: none; text-align: center; pointer-events: none; box-shadow: 0 0 30px #f00; font-size: 14px; letter-spacing: 1px; clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); backdrop-filter: blur(5px); }
-
+    
     #tactical-alert-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 9999; display: none; justify-content: center; align-items: center; }
     #tactical-alert-box { background: #0a0505; border: 2px solid #f00; padding: 25px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 0 30px rgba(255,0,0,0.5); clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); }
     #tactical-alert-title { color: #f00; margin-top: 0; margin-bottom: 15px; font-size: 20px; letter-spacing: 2px; border-bottom: 1px solid #f00; padding-bottom: 5px; }
@@ -104,7 +108,7 @@
 
 <div id="login-screen" class="full-screen-ui">
     <h1>DMZ: DEPLOY</h1>
-    <div class="version-tag">PLAYER TERMINAL v3.5.1</div>
+    <div class="version-tag">PLAYER TERMINAL v4.0</div>
     
     <div id="status-label" class="status-label">CONNESSIONE...</div>
     
@@ -190,7 +194,6 @@
 <div id="gas-overlay"></div>
 <div id="cuav-overlay"></div>
 <div id="crosshair">✛</div>
-<div id="targeting-overlay">⬇ CLICCA SULLA MAPPA PER LANCIARE L'ATTACCO AEREO ⬇</div>
 
 <div id="hud-top-container" style="display:none;">
     <div id="global-timers-bar">
@@ -261,23 +264,35 @@
 
     function formatTime(ms) {
         if(ms <= 0) return "00:00";
-        let totalSeconds = Math.floor(ms / 1000);
-        let minutes = Math.floor(totalSeconds / 60);
-        let seconds = totalSeconds % 60;
+        let totalSeconds = Math.floor(ms / 1000); let minutes = Math.floor(totalSeconds / 60); let seconds = totalSeconds % 60;
         return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    // FASE 1: BASI AGGIORNATE CAMPO 1
     const masterBasesDB = [
-        { id: "B1", lat: 45.679200, lng: 9.893500 }, { id: "B2", lat: 45.679000, lng: 9.894500 }, { id: "B3", lat: 45.678800, lng: 9.896000 }, { id: "B4", lat: 45.678600, lng: 9.898000 },
-        { id: "B5", lat: 45.678400, lng: 9.901000 }, { id: "B6", lat: 45.679800, lng: 9.901000 }, { id: "B7", lat: 45.679600, lng: 9.899000 }, { id: "B8", lat: 45.679400, lng: 9.897000 },
-        { id: "B9", lat: 45.679600, lng: 9.895000 }, { id: "B10", lat: 45.679100, lng: 9.895000 }, { id: "B11", lat: 45.678900, lng: 9.897000 }, { id: "B12", lat: 45.678700, lng: 9.899000 },
-        { id: "B13", lat: 45.678500, lng: 9.902000 }, { id: "B14", lat: 45.680000, lng: 9.901500 }, { id: "B15", lat: 45.679700, lng: 9.898000 }, { id: "B16", lat: 45.679500, lng: 9.896000 },
-        { id: "B17", lat: 45.679300, lng: 9.894000 }, { id: "B18", lat: 45.679100, lng: 9.896500 }, { id: "B19", lat: 45.679200, lng: 9.898500 }, { id: "B20", lat: 45.679000, lng: 9.900000 }
+        { id: "B1", name: "CHIRINGUITO", lat: 45.67905, lng: 9.89437 }, 
+        { id: "B2", name: "BANCA", lat: 45.67941, lng: 9.89544 }, 
+        { id: "B3", name: "PRATI BASSI", lat: 45.67913, lng: 9.89825 }, 
+        { id: "B4", name: "LABORATORIO", lat: 45.67904, lng: 9.89984 },
+        { id: "B5", name: "BUCO NERO", lat: 45.67908, lng: 9.89655 }, 
+        { id: "B6", name: "PRATI ALTI", lat: 45.68039, lng: 9.90002 }, 
+        { id: "B7", name: "ANFITEATRO", lat: 45.67921, lng: 9.90121 }, 
+        { id: "B8", name: "BASE 8", lat: 45.67940, lng: 9.89700 },
+        { id: "B9", name: "BASE 9", lat: 45.67960, lng: 9.89500 }, 
+        { id: "B10", name: "BASE 10", lat: 45.67910, lng: 9.89500 }, 
+        { id: "B11", name: "BASE 11", lat: 45.67890, lng: 9.89700 }, 
+        { id: "B12", name: "BASE 12", lat: 45.67870, lng: 9.89900 },
+        { id: "B13", name: "BASE 13", lat: 45.67850, lng: 9.90200 }, 
+        { id: "B14", name: "BASE 14", lat: 45.68000, lng: 9.90150 }, 
+        { id: "B15", name: "BASE 15", lat: 45.67970, lng: 9.89800 }, 
+        { id: "B16", name: "BASE 16", lat: 45.67950, lng: 9.89600 },
+        { id: "B17", name: "BASE 17", lat: 45.67930, lng: 9.89400 }, 
+        { id: "B18", name: "BASE 18", lat: 45.67910, lng: 9.89650 }, 
+        { id: "B19", name: "BASE 19", lat: 45.67920, lng: 9.89850 }, 
+        { id: "B20", name: "BASE 20", lat: 45.67900, lng: 9.90000 }
     ];
 
     const fieldsDB = {
-        "campo1": { boundaries: [ [45.679223, 9.892754], [45.679053, 9.894369], [45.678634, 9.896859], [45.678212, 9.903234], [45.680357, 9.902110], [45.679790, 9.899845], [45.679941, 9.897482], [45.679488, 9.894333] ], exfils: [ { id: "C1", lat: 45.6800, lng: 9.8966, label: "EXFIL C1" } ], center: [45.6795, 9.8975] },
+        "campo1": { boundaries: [ [45.679223, 9.892754], [45.679053, 9.894369], [45.678634, 9.896859], [45.678212, 9.903234], [45.680357, 9.902110], [45.679790, 9.899845], [45.679941, 9.897482], [45.679488, 9.894333] ], exfils: [ { id: "C1", lat: 45.6800, lng: 9.8966, label: "EXFIL C1" }, { id: "C2", lat: 45.6788, lng: 9.8950, label: "EXFIL C2" } ], center: [45.6795, 9.8975] },
         "campo2": { boundaries: [[45.001, 8.999], [45.001, 9.001], [44.999, 9.001], [44.999, 8.999]], exfils: [], center: [45.000, 9.000] },
         "campo5": { boundaries: [[45.7014, 9.8256], [45.7014, 9.8296], [45.6974, 9.8296], [45.6974, 9.8256]], exfils: [ { id: "C1", lat: 45.6998, lng: 9.8276, label: "EXFIL C1" } ], center: [45.6994, 9.8276] }
     };
@@ -287,10 +302,10 @@
     let myStash = { cash: 0, items: [] }; 
     let map, myMarker = null, markers = {}; 
     let isDeployed = false, bleedoutTimer = null, localUAVActive = false, isTargetingAirstrike = false;
-    let myContract = null, exfilTimerEnd = null; window.bleedoutEndTime = null; let isMapRotated = false;
+    let myContract = null; window.bleedoutEndTime = null; let isMapRotated = false;
     
     let globalSettings = { status: 'lobby' }; let activeStreaks = {}; let playersDataCache = {};
-    let isGameOver = false;
+    let isGameOver = false; window.globalExfils = {}; window.exfilAudioStates = {};
 
     window.logEvent = function(msg) { push(ref(db, 'dmz_logs'), { msg: msg, timestamp: Date.now() }); };
     function isInsideArea(p, poly) { let x = p[0], y = p[1], inside = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { let intersect = ((poly[i][1] > y) != (poly[j][1] > y)) && (x < (poly[j][0] - poly[i][0]) * (y - poly[i][1]) / (poly[j][1] - poly[i][1]) + poly[i][0]); if (intersect) inside = !inside; } return inside; }
@@ -305,7 +320,7 @@
             if (!isDeployed && globalSettings.start_gear_config) {
                 if (globalSettings.backpack_active === false && globalSettings.economy_active === false) { document.getElementById('btn-stash').style.display = 'none'; } else { document.getElementById('btn-stash').style.display = 'block'; }
                 if (globalSettings.backpack_active === false) { if(sgs) sgs.style.display = 'none'; } else {
-                    let mode = globalSettings.start_gear_config.mode; let pool = globalSettings.start_gear_config.pool || []; let limit = globalSettings.start_gear_config.limit || 5;
+                    let mode = globalSettings.start_gear_config.mode; let pool = globalSettings.start_gear_config.pool || [];
                     if (mode === 'none') { if(sgs) sgs.style.display = 'none'; } 
                     else if (mode === 'fixed') { if(sgs) sgs.style.display = 'block'; if(sgo) sgo.innerHTML = pool.map(i => `<div style="color:#0cf; font-size:12px;">- ${i.name}</div>`).join(''); } 
                     else if (mode === 'choice') { if(sgs) sgs.style.display = 'block'; if(sgo) sgo.innerHTML = pool.map((i, idx) => `<label style="color:#0cf; font-size:12px; display:flex; align-items:center; gap:5px;"><input type="checkbox" class="start-gear-cb" value="${idx}" style="transform:scale(1.2);"> ${i.name}</label>`).join(''); }
@@ -319,13 +334,12 @@
         if (isDeployed) { 
             let ecoBox = document.getElementById('hud-economy-box');
             if (globalSettings.economy_active === false && globalSettings.backpack_active === false) { ecoBox.style.display = 'none'; } else {
-                ecoBox.style.display = 'flex';
-                document.getElementById('txt-cash').style.display = (globalSettings.economy_active === false) ? 'none' : 'inline';
-                document.getElementById('txt-bp').style.display = (globalSettings.backpack_active === false) ? 'none' : 'inline';
-                document.getElementById('txt-sep').style.display = (globalSettings.economy_active !== false && globalSettings.backpack_active !== false) ? 'inline' : 'none';
+                ecoBox.style.display = 'flex'; document.getElementById('txt-cash').style.display = (globalSettings.economy_active === false) ? 'none' : 'inline'; document.getElementById('txt-bp').style.display = (globalSettings.backpack_active === false) ? 'none' : 'inline'; document.getElementById('txt-sep').style.display = (globalSettings.economy_active !== false && globalSettings.backpack_active !== false) ? 'inline' : 'none';
             }
         }
     });
+
+    onValue(ref(db, 'dmz_exfils'), (snap) => { window.globalExfils = snap.val() || {}; });
 
     onValue(ref(db, 'dmz_streaks'), (snap) => {
         activeStreaks = snap.val() || {};
@@ -406,12 +420,8 @@
         let pItems = isRare ? defaultRarePool : (globalSettings.lockers_config ? globalSettings.lockers_config.pool : []);
         
         if (globalSettings.economy_active !== false && pMoney && pMoney.length > 0) { let rM = Math.random() * 100, cM = 0; for(let m of pMoney) { cM += m.chance; if(rM <= cM){ money = m.amount; break; } } }
-        
         if (globalSettings.backpack_active !== false && pItems && pItems.length > 0) { 
-            let rI = Math.random() * 100, cI = 0; 
-            for(let i of pItems) { cI += i.chance; if(rI <= cI){ if(i.name !== "VUOTO") { let newItem = { ...i }; if (newItem.name.includes("CHIAVE")) newItem.uses = 3; items.push(newItem); } break; } } 
-            
-            // INIEZIONE AUTOMATICA CHIAVI
+            let rI = Math.random() * 100, cI = 0; for(let i of pItems) { cI += i.chance; if(rI <= cI){ if(i.name !== "VUOTO") { let newItem = { ...i }; if (newItem.name.includes("CHIAVE")) newItem.uses = 3; items.push(newItem); } break; } } 
             if (Math.random() * 100 <= 15) items.push({ name: `CHIAVE ARMADIETTI`, uses: 3, value: 500 });
             if (Math.random() * 100 <= 10) items.push({ name: `CHIAVE B${Math.floor(Math.random() * 20) + 1}`, uses: 3, value: 1000 });
         }
@@ -463,8 +473,7 @@
             let key = myBackpack[idxToUse]; if (key.uses === undefined) key.uses = 3;
             tacticalConfirm(`Serratura bloccata. Usare ${key.name}?\n(Usi rimanenti: ${key.uses}/3)`, () => {
                 key.uses -= 1; 
-                if (key.uses <= 0) { myBackpack.splice(idxToUse, 1); tacticalAlert(`Porta sbloccata!\nLa ${key.name} si è rotta.`, "UNLOCK", true); } 
-                else { tacticalAlert(`Porta sbloccata!\nUsi: ${key.uses}/3.`, "UNLOCK", true); }
+                if (key.uses <= 0) { myBackpack.splice(idxToUse, 1); tacticalAlert(`Porta sbloccata!\nLa ${key.name} si è rotta.`, "UNLOCK", true); } else { tacticalAlert(`Porta sbloccata!\nUsi: ${key.uses}/3.`, "UNLOCK", true); }
                 updateEconomyHUD(); onSuccessCallback();
             }); return; 
         }
@@ -510,8 +519,10 @@
     };
     window.closeScanner = function() { document.getElementById('scanner-modal').style.display = 'none'; if (window.html5QrCode && window.html5QrCode.isScanning) { window.html5QrCode.stop().then(() => { window.html5QrCode.clear(); window.html5QrCode = null; }).catch(()=>{}); } };
 
+    // FASE 2: GESTIONE DOPPIA SCANSIONE EXFIL E FINALE
     window.processScannedCode = function() {
         let code = document.getElementById('manual-code-input').value.trim().toUpperCase(); if(!code) return; closeScanner();
+        
         if (code.startsWith('A')) {
             if (globalSettings && globalSettings.lockers_active === false) return tacticalAlert("Gli armadietti sono disabilitati in questa partita.", "ACCESSO NEGATO");
             let isRare = globalSettings.keys_lockers ? true : false;
@@ -558,14 +569,37 @@
                 } else tacticalAlert("Base sbloccata.", "INFO", true);
             });
         } 
-        else if (code.startsWith('C') || code.startsWith('E')) {
-            if (globalSettings.exfil_config && globalSettings.exfil_config.enabled) {
-                let isValidExfil = currentExfilPoints.some(ex => (ex.id === code) || (ex.label && ex.label.includes(code)));
-                if (!isValidExfil && globalSettings.exfil_config.position === 'random') return tacticalAlert(`Il punto ${code} non è un'estrazione attiva in questa partita!`);
-                if(exfilTimerEnd) return tacticalAlert("Hai già chiamato un elicottero!");
-                let waitMins = globalSettings.exfil_config.waitTime || 0;
-                if(waitMins > 0) { exfilTimerEnd = Date.now() + (waitMins * 60000); speakTactical("Elicottero in arrivo. Difendere la zona di estrazione."); tacticalAlert(`Elicottero in arrivo a ${code}!\nDifendi l'area per ${waitMins} minuti.`, "EXFIL", true); update(push(ref(db, 'dmz_pings')), { team: myTeam, lat: myMarker.getLatLng().lat, lng: myMarker.getLatLng().lng, sender: "ELICOTTERO CHIAMATO", timestamp: Date.now() }); logEvent(`🚁 ELICOTTERO richiesto al punto ${code}.`); } else { doExfil(); }
-            } else tacticalAlert("Elicottero non disponibile.");
+        // FASE 2: DOPPIA SCANSIONE EXFIL
+        else if (code.startsWith('C') || code.startsWith('E') || code === 'FINAL_EXFIL') {
+            if (!globalSettings.exfil_config || !globalSettings.exfil_config.enabled) return tacticalAlert("Elicottero non disponibile in questa partita.");
+            
+            let ex = window.globalExfils && window.globalExfils[code];
+            let now = Date.now();
+
+            if (!ex || now > ex.departAt) {
+                // PRIMA SCANSIONE: CHIAMA L'ELICOTTERO
+                let waitMins = globalSettings.exfil_config.waitTime || 2;
+                let waitMs = waitMins * 60000;
+                let point = currentExfilPoints.find(p => p.id === code || (p.label && p.label.includes(code)));
+                if (!point && globalSettings.exfil_config.position !== 'random' && code !== 'FINAL_EXFIL') return tacticalAlert("Punto di estrazione non valido.");
+
+                let eLat = point ? point.lat : (myMarker ? myMarker.getLatLng().lat : activeFieldCenter[0]);
+                let eLng = point ? point.lng : (myMarker ? myMarker.getLatLng().lng : activeFieldCenter[1]);
+
+                update(ref(db, `dmz_exfils/${code}`), {
+                    calledAt: now,
+                    arriveAt: now + waitMs,
+                    departAt: now + waitMs + 30000, // 30 secondi di tempo per salire
+                    callerTeam: myTeam, lat: eLat, lng: eLng
+                });
+            } 
+            else if (now < ex.arriveAt) {
+                tacticalAlert(`L'elicottero è ancora in volo.\nAttendi l'atterraggio prima di scansionare di nuovo per salire.`, "IN AVVICINAMENTO", false);
+            } 
+            else if (now >= ex.arriveAt && now <= ex.departAt) {
+                // SECONDA SCANSIONE: IMBARCO RIUSCITO
+                doExfil();
+            }
         } 
         else if (code.startsWith('D')) { window.openShop(); }
         else if (code.startsWith('OP_')) {
@@ -593,9 +627,14 @@
         let hN = myBackpack.findIndex(i => i.name === "BARRE DI URANIO"); if (hN > -1 && myContract && myContract.type === 'NUKE') { contractReward += 20000; tacticalAlert("MATERIALE NUCLEARE ESTRATTO!\n+$20000", "REWARD", true); myContract = null; }
         let totalValue = contractReward; myBackpack.forEach(i => totalValue += (i.value||0)); myCash += totalValue; 
         
+        let endExfil = () => {
+            document.getElementById('obj-status').innerText = `✅ ESTRATTO`; document.getElementById('obj-status').style.color = "#0f0"; setStatus('exfil'); logEvent(`✅ SQUADRA ${myTeam} è stata esfiltrata.`);
+            tacticalAlert("Estrazione Completata! Chiudendo la connessione...", "SUCCESS", true);
+            setTimeout(() => { window.location.reload(); }, 5000);
+        };
+
         if (globalSettings && globalSettings.backpack_active === false && globalSettings.economy_active === false) {
-             tacticalAlert(`ESTRAZIONE COMPLETATA!`, "EXFIL", true); document.getElementById('obj-status').innerText = `✅ ESTRATTO`; document.getElementById('obj-status').style.color = "#0f0"; setStatus('exfil'); logEvent(`✅ SQUADRA ${myTeam} è stata esfiltrata.`);
-             return;
+             endExfil(); return;
         }
 
         let safeName = myName.replace(/[^A-Z0-9]/g, '');
@@ -603,7 +642,7 @@
             let stash = snap.val() || { cash: 0, items: [] }; if(globalSettings.economy_active !== false) stash.cash += myCash; if(globalSettings.backpack_active !== false) { if(!stash.items) stash.items = []; stash.items = stash.items.concat(myBackpack); }
             update(ref(db, 'dmz_stash/' + safeName), stash).then(() => {
                 myCash = 0; myBackpack = []; updateEconomyHUD();
-                tacticalAlert(`ESTRAZIONE COMPLETATA!\nGuadagno Raid: $${totalValue}\nTutto l'equipaggiamento è stato salvato nel tuo Magazzino.`, "SUCCESS", true); document.getElementById('obj-status').innerText = `✅ ESTRATTO`; document.getElementById('obj-status').style.color = "#0f0"; setStatus('exfil'); logEvent(`✅ SQUADRA ${myTeam} è stata esfiltrata.`);
+                endExfil();
             });
         }).catch(err => { tacticalAlert("Errore di salvataggio Stash: " + err); });
     }
@@ -679,6 +718,8 @@
         window.currentGlobalUavState = isUAV;
 
         Object.keys(markers).forEach(k => { 
+            // Salta i marker Exfil per non cancellarli per sbaglio qui
+            if (k.startsWith('EX_')) return;
             let p = playersDataCache[k]; let isGasVis = p && p.in_gas && globalSettings.gas_config && globalSettings.gas_config.visibility;
             if(!p || p.status === 'exfil' || (p.team !== myTeam && p.status !== "dead" && !isUAV && !isGasVis && !p.has_cargo)) { map.removeLayer(markers[k]); delete markers[k]; } 
         });
@@ -703,6 +744,24 @@
             }
         });
 
+        // FASE 2: DISEGNA GLI ELICOTTERI GLOBALI SULLA MAPPA
+        let now = Date.now();
+        Object.keys(window.globalExfils || {}).forEach(k => {
+            let ex = window.globalExfils[k];
+            if (now <= ex.departAt) {
+                let isLanded = (now >= ex.arriveAt);
+                let color = isLanded ? "#0f0" : "#f00";
+                let status = isLanded ? "ATTERRATO (30s)" : "IN ARRIVO";
+                let iconHtml = `<div class="base-marker-container"><div class="exfil-circle" style="background:rgba(0,0,0,0.8); border-color:${color}; box-shadow:0 0 15px ${color}; animation: ${isLanded?'none':'ping-pulse 1s infinite'};">🚁</div><div class="exfil-name" style="color:${color}; width:120px; margin-left:-10px;">${k}<br>${status}</div></div>`;
+                
+                let ic = L.divIcon({ className: 'exfil-dynamic', html: iconHtml, iconSize: [30, 30], iconAnchor: [15, 15] });
+                if(!markers[`EX_${k}`]) markers[`EX_${k}`] = L.marker([ex.lat, ex.lng], {icon:ic}).addTo(map);
+                else { markers[`EX_${k}`].setIcon(ic); markers[`EX_${k}`].setLatLng([ex.lat, ex.lng]); }
+            } else {
+                if(markers[`EX_${k}`]) { map.removeLayer(markers[`EX_${k}`]); delete markers[`EX_${k}`]; }
+            }
+        });
+
         if (myContract && myContract.type === 'HUNT') {
             if (!huntTargetFound) { tacticalAlert("Bersaglio disconnesso o estratto.", "TAGLIA PERSA"); myContract = null; if(window.huntCircle) { map.removeLayer(window.huntCircle); window.huntCircle = null; } }
             else if (Date.now() > myContract.endTime) { tacticalAlert("Tempo scaduto per la taglia. Contratto fallito.", "TAGLIA PERSA"); myContract = null; if(window.huntCircle) { map.removeLayer(window.huntCircle); window.huntCircle = null; } }
@@ -719,13 +778,13 @@
             let iconHtml = `<div class="base-marker-container"><div class="base-circle">${b.id.replace('B','')}</div><div class="base-name">${baseLabel}</div></div>`;
             L.marker([b.lat, b.lng], {icon: L.divIcon({ className: 'base-icon', html: iconHtml, iconSize: [30, 30], iconAnchor: [15, 15] }) }).addTo(map); 
         });
-        
-        if (globalSettings.exfil_config && globalSettings.exfil_config.enabled) {
-            let maxPoints = globalSettings.exfil_config.numPoints || currentExfilPoints.length;
-            currentExfilPoints.slice(0, maxPoints).forEach(ex => { 
+
+        // Nascondiamo i marker fissi degli exfil se usiamo quelli dinamici, ma li teniamo se configurato in modo "defined" per orientarsi.
+        if (globalSettings.exfil_config && globalSettings.exfil_config.enabled && globalSettings.exfil_config.position === 'defined') {
+            currentExfilPoints.forEach(ex => { 
                 if (ex && ex.lat !== undefined && ex.lng !== undefined) {
-                    let iconHtml = `<div class="base-marker-container"><div class="exfil-circle">🚁</div><div class="exfil-name">${ex.label}</div></div>`;
-                    L.marker([ex.lat, ex.lng], {icon: L.divIcon({ className: 'exfil-icon', html: iconHtml, iconSize: [30, 30], iconAnchor: [15, 15] }) }).addTo(map); 
+                    let iconHtml = `<div class="base-marker-container"><div class="exfil-circle" style="background:#555;">H</div><div class="exfil-name" style="color:#aaa;">Punto Est.</div></div>`;
+                    L.marker([ex.lat, ex.lng], {icon: L.divIcon({ className: 'exfil-icon-static', html: iconHtml, iconSize: [30, 30], iconAnchor: [15, 15] }) }).addTo(map); 
                 }
             });
         }
@@ -760,12 +819,13 @@
         
         renderMarkers();
 
-        // FASE 1: LOGICA TIMER FINE PARTITA
+        // LOGICA TIMER FINE PARTITA
         if (globalSettings.gameEndTime && !isGameOver) {
             let timeLeftMs = globalSettings.gameEndTime - now;
             if (timeLeftMs <= 0) {
                 isGameOver = true;
-                document.getElementById('time-left').innerText = "00:00"; document.getElementById('time-left').style.color = "#f00";
+                document.getElementById('time-left').innerText = "00:00";
+                document.getElementById('time-left').style.color = "#f00";
                 if(myStatus === 'active' || myStatus === 'down') { speakTactical("Tempo scaduto. Mancata estrazione. Missione fallita."); tacticalAlert("TEMPO SCADUTO.\nSei stato abbandonato nell'Area Operativa (KIA).", "GAME OVER"); setStatus('dead'); }
             } else {
                 document.getElementById('time-left').innerText = formatTime(timeLeftMs);
@@ -773,7 +833,6 @@
             }
         }
 
-        // FASE 1: CONTEGGIO E CHIUSURA AUTOMATICA
         let aliveCount = 0; let totalPlayers = Object.keys(playersDataCache).length;
         Object.keys(playersDataCache).forEach(k => { if (playersDataCache[k].status !== 'exfil' && playersDataCache[k].status !== 'dead') aliveCount++; });
         document.getElementById('players-alive').innerText = aliveCount;
@@ -784,7 +843,27 @@
             push(ref(db, 'dmz_logs'), { msg: "Tutti gli operatori sono K.I.A. o Estratti. Partita Terminata.", timestamp: Date.now() });
         }
 
-        if (exfilTimerEnd) { if (myStatus !== 'active') { exfilTimerEnd = null; } else if (Math.ceil((exfilTimerEnd - now) / 1000) <= 0) { exfilTimerEnd = null; doExfil(); } }
+        // FASE 2: NOTIFICHE AUDIO ELICOTTERI E GESTIONE
+        Object.keys(window.globalExfils || {}).forEach(k => {
+            let ex = window.globalExfils[k];
+            if (!window.exfilAudioStates[k]) window.exfilAudioStates[k] = { called: false, arrived: false, departed: false };
+            let st = window.exfilAudioStates[k];
+
+            if (!st.called && now < ex.arriveAt) {
+                st.called = true;
+                if(ex.callerTeam !== "SYSTEM") { speakTactical(`Estrazione richiesta. Rilevato elicottero in avvicinamento.`); tacticalAlert(`Un elicottero è stato chiamato al punto ${k}. Raggiungi la zona per intercettarlo!`, "ESTRAZIONE RILEVATA"); }
+            }
+            if (!st.arrived && now >= ex.arriveAt && now <= ex.departAt) {
+                st.arrived = true;
+                speakTactical(`Elicottero arrivato. 30 secondi alla partenza.`);
+                if (ex.callerTeam === myTeam || ex.callerTeam === "SYSTEM") { tacticalAlert(`ELICOTTERO ATTERRATO!\nHai 30 secondi per scansionare il codice ${k} e salire.`, "IMBARCO", true); }
+            }
+            if (!st.departed && now > ex.departAt) {
+                st.departed = true;
+                if (ex.callerTeam === myTeam) speakTactical(`L'elicottero è ripartito.`);
+            }
+        });
+
         if (myContract && myContract.type === 'DESTROY' && myContract.state === 'ARMED') { if (myStatus !== 'active') { myContract = null; } else if (Math.ceil((myContract.endTime - now) / 1000) <= 0) { tacticalAlert("BOOM! Scorte distrutte!\n+$10000", "SUCCESS", true); myCash += 10000; updateEconomyHUD(); myContract = null; logEvent(`💥 Scorte distrutte (Contratto completato).`); } }
 
         if (myContract && (myContract.type === 'INTEL' || myContract.type === 'NUKE') && myContract.state === 'FETCH') {
@@ -816,7 +895,6 @@
             }
             if(currentRadius < 5) currentRadius = 5; 
 
-            // HUD TIMER GAS
             let gtl = document.getElementById('gas-time-left');
             if (currentRadius <= radii[radii.length-1]) { gtl.innerText = "FINALE"; gtl.style.color = "#f0f"; }
             else if (isShrinking) { gtl.innerText = "IN MOVI."; gtl.style.color = "#f0f"; }
@@ -824,6 +902,16 @@
 
             if(!window.safeZoneCircle) { window.safeZoneCircle = L.circle(centerLL, {color:'#f0f', weight:2, fillOpacity:0.05, dashArray:'5,5'}).addTo(map); } else { window.safeZoneCircle.setLatLng(centerLL); window.safeZoneCircle.setRadius(currentRadius); }
             
+            // FASE 2: ELICOTTERO FINALE AL CENTRO DEL GAS
+            if (currentRadius <= radii[radii.length-1] && !window.finalExfilTriggered && globalSettings.status === 'running') {
+                window.finalExfilTriggered = true;
+                update(ref(db, 'dmz_exfils/FINAL_EXFIL'), {
+                    calledAt: now, arriveAt: now + 30000, departAt: now + 120000, callerTeam: "SYSTEM",
+                    lat: centerLL.lat, lng: centerLL.lng
+                });
+                speakTactical("Attenzione. Gas al massimo livello. Elicottero di estrazione finale in arrivo al centro.");
+            }
+
             if(myMarker) {
                 inGas = centerLL.distanceTo(myMarker.getLatLng()) > currentRadius;
                 document.getElementById('gas-overlay').style.display = inGas ? 'block' : 'none';
@@ -855,7 +943,6 @@
         }
         
         if (myContract && myContract.type === 'DESTROY' && myContract.state === 'ARMED') { let r = Math.ceil((myContract.endTime - now) / 1000); if (r > 0) { osText = `💣 DETONAZIONE: ${r}s`; osColor = "#ff0"; } }
-        if (exfilTimerEnd) { let r = Math.ceil((exfilTimerEnd - now) / 1000); if (r > 0) { osText = `🚁 ESTRAZIONE: ${r}s`; osColor = "#0ff"; } }
         if (inGas) { if (globalSettings.gas_config && globalSettings.gas_config.lethal && myStatus === 'active') { osText = `☢️ GAS: ${gasRemain}s`; osColor = "#f0f"; } else if (globalSettings.gas_config && !globalSettings.gas_config.lethal) { osText = `☢️ ZONA CONTAMINATA`; osColor = "#f0f"; } }
         
         if (myStatus === 'down') { if (window.bleedoutEndTime) { let r = Math.ceil((window.bleedoutEndTime - now) / 1000); osText = `🩸 DISSANGUAMENTO: ${r}s`; osColor = "#ffa500"; } else { osText = `🩸 IN ATTESA MEDICO`; osColor = "#ffa500"; }
