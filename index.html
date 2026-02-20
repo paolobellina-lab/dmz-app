@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DMZ">
 <meta name="theme-color" content="#000000">
-<title>DMZ: TACTICAL MAP v4.1</title>
+<title>DMZ: TACTICAL MAP v4.2</title>
 
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -108,7 +108,7 @@
 
 <div id="login-screen" class="full-screen-ui">
     <h1>DMZ: DEPLOY</h1>
-    <div class="version-tag">PLAYER TERMINAL v4.1</div>
+    <div class="version-tag">PLAYER TERMINAL v4.2</div>
     
     <div id="status-label" class="status-label">CONNESSIONE...</div>
     
@@ -185,8 +185,9 @@
 </div>
 
 <div id="revive-overlay">
-    🏥 RIANIMAZIONE...<br><br><span id="revive-timer" style="font-size: 60px; color:#fff;">10</span>s<br><br>
-    <button class="btn-deploy" style="background:#500; border-color:#f00; margin-top:40px;" onclick="cancelRevive()">INTERROMPI</button>
+    <span id="revive-text" style="font-size: 20px;">🏥 CURE IN CORSO...<br>Rimani in zona!</span><br><br>
+    <span id="revive-timer" style="font-size: 60px; color:#fff;">10</span><br><br>
+    <button class="btn-deploy" style="background:#500; border-color:#f00; margin-top:40px;" onclick="cancelRevive()">INTERROMPI CURE</button>
 </div>
 
 <div id="emp-overlay">⚠️ ERRORE CRITICO ⚠️<br><br>IMPULSO ELETROMAGNETICO</div>
@@ -268,27 +269,28 @@
         return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
+    // FASE 1: BASI AGGIORNATE
     const masterBasesDB = [
-        { id: "B1", name: "CHIRINGUITO", lat: 45.67905, lng: 9.89437 }, 
-        { id: "B2", name: "BANCA", lat: 45.67941, lng: 9.89544 }, 
-        { id: "B3", name: "PRATI BASSI", lat: 45.67913, lng: 9.89825 }, 
-        { id: "B4", name: "LABORATORIO", lat: 45.67904, lng: 9.89984 },
-        { id: "B5", name: "BUCO NERO", lat: 45.67908, lng: 9.89655 }, 
-        { id: "B6", name: "PRATI ALTI", lat: 45.68039, lng: 9.90002 }, 
-        { id: "B7", name: "ANFITEATRO", lat: 45.67921, lng: 9.90121 }, 
-        { id: "B8", name: "BASE 8", lat: 45.67940, lng: 9.89700 },
-        { id: "B9", name: "BASE 9", lat: 45.67960, lng: 9.89500 }, 
-        { id: "B10", name: "BASE 10", lat: 45.67910, lng: 9.89500 }, 
-        { id: "B11", name: "BASE 11", lat: 45.67890, lng: 9.89700 }, 
-        { id: "B12", name: "BASE 12", lat: 45.67870, lng: 9.89900 },
-        { id: "B13", name: "BASE 13", lat: 45.67850, lng: 9.90200 }, 
-        { id: "B14", name: "BASE 14", lat: 45.68000, lng: 9.90150 }, 
-        { id: "B15", name: "BASE 15", lat: 45.67970, lng: 9.89800 }, 
-        { id: "B16", name: "BASE 16", lat: 45.67950, lng: 9.89600 },
-        { id: "B17", name: "BASE 17", lat: 45.67930, lng: 9.89400 }, 
-        { id: "B18", name: "BASE 18", lat: 45.67910, lng: 9.89650 }, 
-        { id: "B19", name: "BASE 19", lat: 45.67920, lng: 9.89850 }, 
-        { id: "B20", name: "BASE 20", lat: 45.67900, lng: 9.90000 }
+        { id: "B1", name: "CHIRINGUITO", lat: 45.678518, lng: 9.894762 }, 
+        { id: "B2", name: "BANCA", lat: 45.678864, lng: 9.895844 }, 
+        { id: "B3", name: "PRATI BASSI", lat: 45.678572, lng: 9.898650 }, 
+        { id: "B4", name: "LABORATORIO", lat: 45.678470, lng: 9.900239 },
+        { id: "B5", name: "BUCO NERO", lat: 45.678524, lng: 9.896959 }, 
+        { id: "B6", name: "PRATI ALTI", lat: 45.679789, lng: 9.900445 }, 
+        { id: "B7", name: "ANFITEATRO", lat: 45.678631, lng: 9.901614 }, 
+        { id: "B8", name: "BASE 8", lat: 45.679400, lng: 9.897000 },
+        { id: "B9", name: "BASE 9", lat: 45.679600, lng: 9.895000 }, 
+        { id: "B10", name: "BASE 10", lat: 45.679100, lng: 9.895000 }, 
+        { id: "B11", name: "BASE 11", lat: 45.678900, lng: 9.897000 }, 
+        { id: "B12", name: "BASE 12", lat: 45.678700, lng: 9.899000 },
+        { id: "B13", name: "BASE 13", lat: 45.678500, lng: 9.902000 }, 
+        { id: "B14", name: "BASE 14", lat: 45.680000, lng: 9.901500 }, 
+        { id: "B15", name: "BASE 15", lat: 45.679700, lng: 9.898000 }, 
+        { id: "B16", name: "BASE 16", lat: 45.679500, lng: 9.896000 },
+        { id: "B17", name: "BASE 17", lat: 45.679300, lng: 9.894000 }, 
+        { id: "B18", name: "BASE 18", lat: 45.679100, lng: 9.896500 }, 
+        { id: "B19", name: "BASE 19", lat: 45.679200, lng: 9.898500 }, 
+        { id: "B20", name: "BASE 20", lat: 45.679000, lng: 9.900000 }
     ];
 
     const fieldsDB = {
@@ -306,6 +308,7 @@
     
     let globalSettings = { status: 'lobby' }; let activeStreaks = {}; let playersDataCache = {};
     let isGameOver = false; window.globalExfils = {}; window.exfilAudioStates = {};
+    window.pendingHealTarget = null; // FASE 3
 
     window.logEvent = function(msg) { push(ref(db, 'dmz_logs'), { msg: msg, timestamp: Date.now() }); };
     function isInsideArea(p, poly) { let x = p[0], y = p[1], inside = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { let intersect = ((poly[i][1] > y) != (poly[j][1] > y)) && (x < (poly[j][0] - poly[i][0]) * (y - poly[i][1]) / (poly[j][1] - poly[i][1]) + poly[i][0]); if (intersect) inside = !inside; } return inside; }
@@ -492,17 +495,28 @@
         else if (action === 'REVIVE') {
             let revivesLeft = actionTargetData.revives_left !== undefined ? actionTargetData.revives_left : (globalSettings.medic_config ? globalSettings.medic_config.maxRevives : 1);
             if (revivesLeft <= 0) return tacticalAlert("L'operatore ha esaurito le rianimazioni totali. Eliminazione definitiva.");
-            document.getElementById('revive-overlay').style.display = 'flex'; let timeLeft = 10; document.getElementById('revive-timer').innerText = timeLeft;
+            
+            // FASE 3: DOPPIA SCANSIONE PER RIANIMAZIONE
+            document.getElementById('revive-overlay').style.display = 'flex';
+            document.getElementById('revive-text').innerHTML = "🏥 RIANIMAZIONE IN CORSO...<br>Rimani in zona!";
+            let timeLeft = 10; document.getElementById('revive-timer').innerText = timeLeft;
+            
             window.reviveInterval = setInterval(() => {
+                if (myStatus !== 'active') { // MEDICO COLPITO
+                    clearInterval(window.reviveInterval); document.getElementById('revive-overlay').style.display = 'none';
+                    window.pendingHealTarget = null; tacticalAlert("Cure interrotte! Sei stato colpito.", "ERRORE CRITICO"); return;
+                }
                 timeLeft--; document.getElementById('revive-timer').innerText = timeLeft;
                 if (timeLeft <= 0) {
-                    clearInterval(window.reviveInterval); document.getElementById('revive-overlay').style.display = 'none';
-                    update(ref(db, 'dmz_players/' + actionTargetCode), { status: 'active', team: myTeam, revives_left: revivesLeft - 1 }); tacticalAlert("Operatore assimilato alla squadra!", "ASSIMILATION", true); logEvent(`🤝 SQUADRA ${myTeam} ha assimilato un operatore.`);
+                    clearInterval(window.reviveInterval);
+                    document.getElementById('revive-text').innerHTML = "CURE PRONTE!<br>Scansiona di nuovo il compagno.";
+                    document.getElementById('revive-timer').innerText = "OK";
+                    window.pendingHealTarget = actionTargetCode; // Imposta l'attesa della 2° scansione
                 }
             }, 1000);
         }
     };
-    window.cancelRevive = function() { if (window.reviveInterval) clearInterval(window.reviveInterval); document.getElementById('revive-overlay').style.display = 'none'; };
+    window.cancelRevive = function() { if (window.reviveInterval) clearInterval(window.reviveInterval); document.getElementById('revive-overlay').style.display = 'none'; window.pendingHealTarget = null; };
 
     let html5QrCode = null;
     window.openScanner = function() { 
@@ -519,7 +533,6 @@
     };
     window.closeScanner = function() { document.getElementById('scanner-modal').style.display = 'none'; if (window.html5QrCode && window.html5QrCode.isScanning) { window.html5QrCode.stop().then(() => { window.html5QrCode.clear(); window.html5QrCode = null; }).catch(()=>{}); } };
 
-    // FASE 2: GESTIONE DOPPIA SCANSIONE EXFIL
     window.processScannedCode = function() {
         let code = document.getElementById('manual-code-input').value.trim().toUpperCase(); if(!code) return; closeScanner();
         
@@ -569,54 +582,72 @@
                 } else tacticalAlert("Base sbloccata.", "INFO", true);
             });
         } 
-        // NUOVA LOGICA ELICOTTERO
         else if (code.startsWith('C') || code.startsWith('E') || code === 'FINAL_EXFIL') {
             if (!globalSettings.exfil_config || !globalSettings.exfil_config.enabled) return tacticalAlert("Elicottero non disponibile.");
-            
-            let ex = window.globalExfils && window.globalExfils[code];
-            let now = Date.now();
+            let ex = window.globalExfils && window.globalExfils[code]; let now = Date.now();
 
             if (!ex || now > ex.departAt) {
-                // 1° SCANSIONE: CHIAMA L'ELICOTTERO
-                let waitMins = globalSettings.exfil_config.waitTime || 2;
-                let waitMs = waitMins * 60000;
+                let waitMins = globalSettings.exfil_config.waitTime || 2; let waitMs = waitMins * 60000;
                 let point = currentExfilPoints.find(p => p.id === code || (p.label && p.label.includes(code)));
                 if (!point && globalSettings.exfil_config.position !== 'random' && code !== 'FINAL_EXFIL') return tacticalAlert("Punto di estrazione non valido.");
-
                 let eLat = point ? point.lat : (myMarker ? myMarker.getLatLng().lat : activeFieldCenter[0]);
                 let eLng = point ? point.lng : (myMarker ? myMarker.getLatLng().lng : activeFieldCenter[1]);
 
-                update(ref(db, `dmz_exfils/${code}`), {
-                    calledAt: now,
-                    arriveAt: now + waitMs,
-                    departAt: now + waitMs + 30000, 
-                    callerTeam: myTeam, lat: eLat, lng: eLng
-                });
-
-                update(push(ref(db, 'dmz_pings')), { team: myTeam, lat: eLat, lng: eLng, sender: "ELICOTTERO", timestamp: Date.now() });
-                logEvent(`🚁 ELICOTTERO richiesto al punto ${code}.`);
+                update(ref(db, `dmz_exfils/${code}`), { calledAt: now, arriveAt: now + waitMs, departAt: now + waitMs + 30000, callerTeam: myTeam, lat: eLat, lng: eLng });
+                update(push(ref(db, 'dmz_pings')), { team: myTeam, lat: eLat, lng: eLng, sender: "ELICOTTERO", timestamp: Date.now() }); logEvent(`🚁 ELICOTTERO richiesto al punto ${code}.`);
             } 
-            else if (now < ex.arriveAt) {
-                // SCANSIONE IN ANTICIPO
-                tacticalAlert(`L'elicottero è ancora in volo.\nAttendi l'atterraggio prima di scansionare di nuovo per salire.`, "IN AVVICINAMENTO", false);
-            } 
-            else if (now >= ex.arriveAt && now <= ex.departAt) {
-                // 2° SCANSIONE: IMBARCO
-                doExfil();
-            }
+            else if (now < ex.arriveAt) { tacticalAlert(`L'elicottero è ancora in volo.\nAttendi l'atterraggio prima di scansionare di nuovo.`, "IN AVVICINAMENTO", false); } 
+            else if (now >= ex.arriveAt && now <= ex.departAt) { doExfil(); }
         } 
         else if (code.startsWith('D')) { window.openShop(); }
         else if (code.startsWith('OP_')) {
             if (code === myId) return tacticalAlert("Non puoi interagire con te stesso!");
+            
+            // FASE 3: SECONDA SCANSIONE MEDICO
+            if (window.pendingHealTarget === code) {
+                get(ref(db, 'dmz_players/' + code)).then((snap) => {
+                    let target = snap.val();
+                    let cLeft = target.cures_left !== undefined ? target.cures_left : 2;
+                    let rLeft = target.revives_left !== undefined ? target.revives_left : 1;
+                    
+                    // Capire se stiamo Curando (down) o Rianimando/Assimilando (dead)
+                    if(target.status === 'down') {
+                        update(ref(db, 'dmz_players/' + code), { status: 'active', cures_left: cLeft - 1 });
+                        tacticalAlert("Compagno curato con successo!", "MEDIC", true);
+                    } else if (target.status === 'dead') {
+                        update(ref(db, 'dmz_players/' + code), { status: 'active', team: myTeam, revives_left: rLeft - 1 });
+                        tacticalAlert("Operatore rianimato e assimilato alla tua squadra!", "ASSIMILATION", true);
+                        logEvent(`🤝 SQUADRA ${myTeam} ha assimilato un operatore.`);
+                    }
+                    
+                    document.getElementById('revive-overlay').style.display = 'none';
+                    window.pendingHealTarget = null;
+                });
+                return;
+            }
+
             get(ref(db, 'dmz_players/' + code)).then((snap) => {
                 let target = snap.val(); if (!target) return tacticalAlert("Operatore non trovato.");
                 if (target.status === 'down') {
                     if (target.team === myTeam) {
                         let curesLeft = target.cures_left !== undefined ? target.cures_left : (globalSettings.medic_config ? globalSettings.medic_config.maxCures : 2);
-                        if (curesLeft <= 0) return tacticalAlert("Operatore ha esaurito le cure rapide. Deve essere Eliminato per la rianimazione.");
-                        document.getElementById('revive-overlay').style.display = 'flex'; let timeLeft = 10; document.getElementById('revive-timer').innerText = timeLeft;
-                        window.reviveInterval = setInterval(() => { timeLeft--; document.getElementById('revive-timer').innerText = timeLeft; if (timeLeft <= 0) { clearInterval(window.reviveInterval); document.getElementById('revive-overlay').style.display = 'none'; update(ref(db, 'dmz_players/' + code), { status: 'active', cures_left: curesLeft - 1 }); tacticalAlert("Compagno curato!", "MEDIC", true); } }, 1000);
-                    } else tacticalAlert("Nemico in dissanguamento! Non puoi derubarlo ora. Finiscilo prima.");
+                        if (curesLeft <= 0) return tacticalAlert("L'operatore ha esaurito le cure rapide. Deve essere Eliminato per la rianimazione totale.");
+                        
+                        // FASE 3: PRIMA SCANSIONE CURA (DOWN)
+                        document.getElementById('revive-overlay').style.display = 'flex';
+                        document.getElementById('revive-text').innerHTML = "🏥 CURE IN CORSO...<br>Rimani in zona!";
+                        let timeLeft = 10; document.getElementById('revive-timer').innerText = timeLeft;
+                        window.reviveInterval = setInterval(() => {
+                            if (myStatus !== 'active') { clearInterval(window.reviveInterval); document.getElementById('revive-overlay').style.display = 'none'; window.pendingHealTarget = null; tacticalAlert("Cure interrotte! Sei stato colpito.", "ERRORE CRITICO"); return; }
+                            timeLeft--; document.getElementById('revive-timer').innerText = timeLeft;
+                            if (timeLeft <= 0) {
+                                clearInterval(window.reviveInterval);
+                                document.getElementById('revive-text').innerHTML = "CURE PRONTE!<br>Scansiona di nuovo il compagno.";
+                                document.getElementById('revive-timer').innerText = "OK";
+                                window.pendingHealTarget = code; // Imposta attesa 2° scansione
+                            }
+                        }, 1000);
+                    } else tacticalAlert("Nemico in dissanguamento! Non puoi curarlo o derubarlo. Finiscilo prima.");
                 } else if (target.status === 'dead') {
                     actionTargetCode = code; actionTargetData = target; document.getElementById('pam-desc').innerText = `Operatore: ${target.name}\nSquadra: ${target.team}`; document.getElementById('player-action-modal').style.display = 'flex';
                 } else tacticalAlert("L'operatore è ancora in combattimento!");
@@ -731,7 +762,6 @@
             push(ref(db, 'dmz_logs'), { msg: "Tutti gli operatori sono K.I.A. o Estratti. Partita Terminata.", timestamp: Date.now() });
         }
 
-        // FASE 2: NOTIFICHE AUDIO ELICOTTERI
         let myExfilCode = null; let myExfilData = null;
         Object.keys(window.globalExfils || {}).forEach(k => {
             let ex = window.globalExfils[k];
@@ -809,7 +839,6 @@
         
         if (myContract && myContract.type === 'DESTROY' && myContract.state === 'ARMED') { let r = Math.ceil((myContract.endTime - now) / 1000); if (r > 0) { osText = `💣 DETONAZIONE: ${r}s`; osColor = "#ff0"; } }
         
-        // FASE 2: AGGIORNAMENTO BANNER ELICOTTERO
         if (myExfilData) {
             if (now < myExfilData.arriveAt) { let r = Math.ceil((myExfilData.arriveAt - now) / 1000); osText = `🚁 ARRIVO ${myExfilCode}: ${r}s`; osColor = "#ff0"; } 
             else if (now <= myExfilData.departAt) { let r = Math.ceil((myExfilData.departAt - now) / 1000); osText = `🚁 IMBARCO ${myExfilCode}: ${r}s`; osColor = "#0f0"; }
