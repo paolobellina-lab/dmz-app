@@ -294,19 +294,50 @@
 
     function doExfil() {
         if(myStatus === 'exfil') return; 
-        myStatus = 'exfil'; 
+        speakTactical("Estrazione completata con successo. Ottimo lavoro.");
         
-        // SALVA NEL DB LO STATO ESTRATTO
-        update(ref(db, 'dmz_players/' + myId), { status: 'exfil' });
-        speakTactical("Estrazione confermata. Rientro alla base.");
+        let contractReward = 0; 
+        let hI = myBackpack.findIndex(i => i.name === "DATI SEGRETI"); 
+        if (hI > -1 && myContract && myContract.type === 'INTEL') { contractReward += 8000; tacticalAlert("CONTRATTO INTEL COMPLETATO!\n+$8000", "REWARD", true); myContract = null; }
+        let hC = myBackpack.findIndex(i => i.name === "CARICO PESANTE"); 
+        if (hC > -1 && myContract && myContract.type === 'CARGO') { contractReward += 15000; tacticalAlert("CONTRATTO CARGO COMPLETATO!\n+$15000", "REWARD", true); myContract = null; myBackpack = myBackpack.filter(i => i.name !== "CARICO PESANTE"); }
+        let hN = myBackpack.findIndex(i => i.name === "BARRE DI URANIO"); 
+        if (hN > -1 && myContract && myContract.type === 'NUKE') { contractReward += 20000; tacticalAlert("MATERIALE NUCLEARE ESTRATTO!\n+$20000", "REWARD", true); myContract = null; }
         
-        // MOSTRA SCHERMATA NERA SENZA DISTRUGGERE IL DOM (FIX)
-        document.getElementById('hud-top-container').style.display = 'none'; 
-        document.getElementById('hud-bottom').style.display = 'none'; 
-        document.getElementById('exfil-success-screen').style.display = 'flex';
+        let totalValue = contractReward; 
+        myBackpack.forEach(i => totalValue += (i.value||0)); 
+        myCash += totalValue; 
         
-        // Ritorna al menu dopo 5 secondi
-        setTimeout(() => { window.location.reload(true); }, 5000);
+        let endExfil = () => {
+            // Segnala al server che sei uscito e ferma l'aggiornamento
+            setStatus('exfil'); 
+            logEvent(`✅ SQUADRA ${myTeam} è stata esfiltrata.`);
+            
+            // CREA LA SCHERMATA NERA IMPENETRABILE CHE BLOCCA IL GIOCO
+            let blackScreen = document.createElement('div');
+            blackScreen.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;background:#000;z-index:99999;display:flex;flex-direction:column;justify-content:center;align-items:center;color:#0f0;font-family:monospace;text-align:center;";
+            blackScreen.innerHTML = `<h2 style="font-size:30px; text-shadow:0 0 15px #0f0; margin-bottom: 10px;">MISSIONE COMPIUTA</h2><span style="font-size:18px;">Estrazione Riuscita.<br>Guadagno Totale: $${totalValue}</span><br><br><span style="color:#aaa;">Sei al sicuro.</span><br><br><button onclick="window.location.href = window.location.href" style="background:#030;color:#0f0;border:1px solid #0f0;padding:15px;margin-top:40px;font-family:monospace;font-size:16px;cursor:pointer;">TORNA AL MENU</button>`;
+            document.body.appendChild(blackScreen);
+        };
+
+        if (globalSettings && globalSettings.backpack_active === false && globalSettings.economy_active === false) { 
+            endExfil(); 
+            return; 
+        }
+
+        let safeName = myName.replace(/[^A-Z0-9]/g, '');
+        get(ref(db, 'dmz_stash/' + safeName)).then((snap) => {
+            let stash = snap.val() || { cash: 0, items: [] }; 
+            if(globalSettings.economy_active !== false) stash.cash += myCash; 
+            if(globalSettings.backpack_active !== false) { 
+                if(!stash.items) stash.items = []; 
+                stash.items = stash.items.concat(myBackpack); 
+            }
+            update(ref(db, 'dmz_stash/' + safeName), stash).then(() => {
+                myCash = 0; myBackpack = []; updateEconomyHUD();
+                endExfil();
+            });
+        }).catch(err => { tacticalAlert("Errore di salvataggio Stash: " + err); });
     }
 
     setInterval(() => {
