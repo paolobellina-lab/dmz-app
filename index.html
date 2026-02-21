@@ -350,8 +350,10 @@
                 }
             } else if(!isDeployed) { if(sgs) sgs.style.display = 'none'; }
         } else {
+            } else {
+            window.finalExfilRevealed = false; // Reset Elicottero Finale
             if(sl) sl.innerText = "🔴 IN ATTESA DEL MASTER"; if(sl) sl.className = "status-label"; if(bd) bd.style.display = "none"; let sgs = document.getElementById('start-gear-selection'); if(sgs) sgs.style.display = 'none';
-            if (isDeployed && !isGameOver) { 
+            if (isDeployed && !isGameOver) {
                 isGameOver = true;
                 if(myStatus === 'active' || myStatus === 'down') { setStatus('dead'); } // KIA istantaneo se non hai esfiltrato
                 setTimeout(() => {
@@ -1151,6 +1153,19 @@ window.showEndGameScreen = function(reason) {
         // LOGICA TIMER FINE PARTITA E MORTI
         if (globalSettings.gameEndTime && !isGameOver && globalSettings.status === 'running') {
             let timeLeftMs = globalSettings.gameEndTime - now;
+            
+            // ELICOTTERO FINALE: Ultimi 5 minuti (300.000 ms)
+            if (timeLeftMs <= 300000 && !window.finalExfilRevealed && globalSettings.exfil_config && globalSettings.exfil_config.finalPoint) {
+                window.finalExfilRevealed = true;
+                tacticalAlert("L'ELICOTTERO FINALE È IN ARRIVO!\nTutti i punti standard sono disabilitati. Raggiungi l'Estrazione Finale per salvarti!", "ESTRAZIONE DI EMERGENZA", true);
+                speakTactical("Attenzione. Elicottero finale in arrivo. Raggiungere l'estrazione immediatamente.");
+                // Sostituisce i vecchi punti con quello finale
+                globalSettings.exfil_config.points = [globalSettings.exfil_config.finalPoint];
+                // Cancella i vecchi marker visivi dalla mappa
+                Object.keys(markers).forEach(k => { if (k.startsWith('EX_')) { map.removeLayer(markers[k]); delete markers[k]; } });
+                logEvent(`🚁 L'Elicottero Finale è in avvicinamento.`);
+            }
+
             if (timeLeftMs <= 0) {
                 isGameOver = true;
                 document.getElementById('time-left').innerText = "00:00";
